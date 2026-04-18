@@ -1,14 +1,701 @@
-<html>  
-  <head>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
-    
-  </head>
-  <body>
-    <h1>Hello world!</h1>
-    <script>
-    </script>
-  </body>
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trinity Piano Scales</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e12;
+    --surface: #16161e;
+    --card: #1c1c26;
+    --border: #2a2a3a;
+    --accent: #c8a97e;
+    --accent2: #7e9fc8;
+    --rh: #e8b4a0;
+    --lh: #a0c8b4;
+    --text: #e8e6e0;
+    --muted: #6e6e82;
+    --sharp: #f0c060;
+    --flat: #88b8f0;
+    --natural: #d0d0c8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+  }
+  header {
+    text-align: center;
+    padding: 3rem 1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(200,169,126,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  header p {
+    margin-top: 0.75rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+/* Legend */
+.legend {
+display: flex;
+gap: 1.5rem;
+justify-content: center;
+flex-wrap: wrap;
+padding: 1.2rem 1rem;
+border-bottom: 1px solid var(–border);
+font-size: 0.72rem;
+letter-spacing: 0.05em;
+}
+.legend-item { display: flex; align-items: center; gap: 0.4rem; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* Nav */
+nav {
+display: flex;
+gap: 0.5rem;
+padding: 1rem;
+overflow-x: auto;
+border-bottom: 1px solid var(–border);
+scrollbar-width: none;
+justify-content: center;
+flex-wrap: wrap;
+}
+nav button {
+background: var(–surface);
+border: 1px solid var(–border);
+color: var(–muted);
+padding: 0.35rem 0.75rem;
+border-radius: 4px;
+font-family: ‘DM Mono’, monospace;
+font-size: 0.72rem;
+cursor: pointer;
+white-space: nowrap;
+transition: all 0.15s;
+letter-spacing: 0.05em;
+}
+nav button:hover, nav button.active {
+border-color: var(–accent);
+color: var(–accent);
+background: rgba(200,169,126,0.08);
+}
+
+main { padding: 1.5rem 1rem; max-width: 1100px; margin: 0 auto; }
+
+.grade-section { display: none; }
+.grade-section.active { display: block; }
+
+.grade-header {
+display: flex;
+align-items: baseline;
+gap: 1rem;
+margin-bottom: 1.5rem;
+padding-bottom: 0.75rem;
+border-bottom: 1px solid var(–border);
+}
+.grade-title {
+font-family: ‘Playfair Display’, serif;
+font-size: 1.8rem;
+color: var(–accent);
+font-weight: 700;
+}
+.grade-subtitle { color: var(–muted); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+.scales-grid {
+display: grid;
+gap: 1.2rem;
+}
+
+.scale-card {
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: 8px;
+overflow: hidden;
+}
+.scale-card-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 0.75rem 1rem;
+background: var(–surface);
+border-bottom: 1px solid var(–border);
+cursor: pointer;
+user-select: none;
+}
+.scale-name {
+font-family: ‘Playfair Display’, serif;
+font-size: 1.1rem;
+color: var(–text);
+}
+.scale-type {
+font-size: 0.68rem;
+color: var(–muted);
+letter-spacing: 0.1em;
+text-transform: uppercase;
+margin-top: 0.1rem;
+}
+.octave-badge {
+font-size: 0.65rem;
+padding: 0.2rem 0.5rem;
+border-radius: 3px;
+background: rgba(126,159,200,0.15);
+color: var(–accent2);
+border: 1px solid rgba(126,159,200,0.3);
+letter-spacing: 0.08em;
+}
+.toggle-icon {
+color: var(–muted);
+font-size: 0.8rem;
+transition: transform 0.2s;
+margin-left: 0.75rem;
+}
+.scale-card.open .toggle-icon { transform: rotate(180deg); }
+
+.scale-body { display: none; padding: 1rem; }
+.scale-card.open .scale-body { display: block; }
+
+/* Notes display */
+.hand-section { margin-bottom: 1rem; }
+.hand-section:last-child { margin-bottom: 0; }
+.hand-label {
+font-size: 0.65rem;
+letter-spacing: 0.15em;
+text-transform: uppercase;
+margin-bottom: 0.5rem;
+display: flex;
+align-items: center;
+gap: 0.5rem;
+}
+.hand-label.rh { color: var(–rh); }
+.hand-label.lh { color: var(–lh); }
+.hand-label::after {
+content: ‘’;
+flex: 1;
+height: 1px;
+background: var(–border);
+}
+
+.notes-row {
+display: flex;
+flex-wrap: wrap;
+gap: 0.35rem;
+align-items: flex-end;
+}
+.note-cell {
+display: flex;
+flex-direction: column;
+align-items: center;
+min-width: 36px;
+}
+.finger {
+font-size: 0.7rem;
+color: var(–muted);
+margin-bottom: 0.15rem;
+font-weight: 500;
+height: 1rem;
+line-height: 1;
+}
+.note-name {
+font-size: 0.8rem;
+font-weight: 500;
+padding: 0.25rem 0.3rem;
+border-radius: 4px;
+min-width: 34px;
+text-align: center;
+line-height: 1.2;
+}
+.note-name.sharp { color: var(–sharp); background: rgba(240,192,96,0.1); border: 1px solid rgba(240,192,96,0.25); }
+.note-name.flat  { color: var(–flat);  background: rgba(136,184,240,0.1); border: 1px solid rgba(136,184,240,0.25); }
+.note-name.nat   { color: var(–natural); background: rgba(208,208,200,0.08); border: 1px solid rgba(208,208,200,0.15); }
+
+.divider-note {
+font-size: 0.65rem;
+color: var(–muted);
+align-self: center;
+padding: 0 0.1rem;
+opacity: 0.5;
+}
+
+.note-count {
+font-size: 0.62rem;
+color: var(–muted);
+margin-top: 0.5rem;
+letter-spacing: 0.05em;
+}
+
+/* Thumb marker */
+.finger.thumb { color: var(–accent); font-weight: 600; }
+
+footer {
+text-align: center;
+padding: 2rem 1rem;
+border-top: 1px solid var(–border);
+color: var(–muted);
+font-size: 0.68rem;
+letter-spacing: 0.08em;
+}
+
+@media (min-width: 700px) {
+.scales-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1000px) {
+.scales-grid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+
+</head>
+<body>
+
+<header>
+  <h1>Trinity Piano Scales</h1>
+  <p>Initial · Grades 1–8 · Notes & Fingering for Both Hands</p>
+</header>
+
+<div class="legend">
+  <div class="legend-item"><div class="dot" style="background:var(--sharp)"></div> Sharp note</div>
+  <div class="legend-item"><div class="dot" style="background:var(--flat)"></div> Flat note</div>
+  <div class="legend-item"><div class="dot" style="background:var(--natural)"></div> Natural note</div>
+  <div class="legend-item"><div class="dot" style="background:var(--rh)"></div> RH = Right Hand</div>
+  <div class="legend-item"><div class="dot" style="background:var(--lh)"></div> LH = Left Hand</div>
+  <div class="legend-item" style="color:var(--accent);font-size:0.72rem">★ = Thumb (finger 1)</div>
+</div>
+
+<nav id="gradeNav"></nav>
+<main id="main"></main>
+
+<footer>Fingering follows standard ABRSM/Trinity conventions. RH fingers: 1=thumb → 5=pinky. LH fingers: 5=pinky → 1=thumb.</footer>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA
+// Each scale: { name, type, octaves, rh: [{note, finger}], lh: [{note, finger}] }
+// note class: 'sharp' | 'flat' | 'nat'
+// For 2-octave scales, the ascending pattern repeats; we store one octave + turnaround
+// ─────────────────────────────────────────────
+
+function n(note, cls, finger) { return { note, cls, finger }; }
+// helpers
+const S='sharp', F='flat', N='nat';
+
+// Build a 2-octave scale from a 1-octave pattern (ascending + descending)
+// pattern = array of {note,cls,finger} for one octave ascending
+// We just store the pattern + indicate 2 octaves in display
+
+const GRADES = [
+  {
+    grade: 'Initial',
+    desc: 'First steps — C, G and F major',
+    scales: [
+      {
+        name: 'C Major', type: 'Major', octaves: 1,
+        rh: [n('C',N,1),n('D',N,2),n('E',N,3),n('F',N,1),n('G',N,2),n('A',N,3),n('B',N,4),n('C',N,5)],
+        lh: [n('C',N,5),n('D',N,4),n('E',N,3),n('F',N,2),n('G',N,1),n('A',N,3),n('B',N,2),n('C',N,1)],
+      },
+      {
+        name: 'G Major', type: 'Major', octaves: 1,
+        rh: [n('G',N,1),n('A',N,2),n('B',N,3),n('C',N,1),n('D',N,2),n('E',N,3),n('F♯',S,4),n('G',N,5)],
+        lh: [n('G',N,5),n('A',N,4),n('B',N,3),n('C',N,2),n('D',N,1),n('E',N,3),n('F♯',S,2),n('G',N,1)],
+      },
+      {
+        name: 'F Major', type: 'Major', octaves: 1,
+        rh: [n('F',N,1),n('G',N,2),n('A',N,3),n('B♭',F,1),n('C',N,2),n('D',N,3),n('E',N,4),n('F',N,5)],
+        lh: [n('F',N,5),n('G',N,4),n('A',N,3),n('B♭',F,2),n('C',N,1),n('D',N,3),n('E',N,2),n('F',N,1)],
+      },
+    ]
+  },
+  {
+    grade: 'Grade 1',
+    desc: 'C, G, D, F major · A, D, E minor',
+    scales: [
+      {
+        name: 'C Major', type: 'Major', octaves: 2,
+        rh: [n('C',N,1),n('D',N,2),n('E',N,3),n('F',N,1),n('G',N,2),n('A',N,3),n('B',N,4),n('C',N,1),n('D',N,2),n('E',N,3),n('F',N,1),n('G',N,2),n('A',N,3),n('B',N,4),n('C',N,5)],
+        lh: [n('C',N,5),n('D',N,4),n('E',N,3),n('F',N,2),n('G',N,1),n('A',N,3),n('B',N,2),n('C',N,1),n('D',N,4),n('E',N,3),n('F',N,2),n('G',N,1),n('A',N,3),n('B',N,2),n('C',N,1)],
+      },
+      {
+        name: 'G Major', type: 'Major', octaves: 2,
+        rh: [n('G',N,1),n('A',N,2),n('B',N,3),n('C',N,1),n('D',N,2),n('E',N,3),n('F♯',S,4),n('G',N,1),n('A',N,2),n('B',N,3),n('C',N,1),n('D',N,2),n('E',N,3),n('F♯',S,4),n('G',N,5)],
+        lh: [n('G',N,5),n('A',N,4),n('B',N,3),n('C',N,2),n('D',N,1),n('E',N,3),n('F♯',S,2),n('G',N,1),n('A',N,4),n('B',N,3),n('C',N,2),n('D',N,1),n('E',N,3),n('F♯',S,2),n('G',N,1)],
+      },
+      {
+        name: 'D Major', type: 'Major', octaves: 2,
+        rh: [n('D',N,1),n('E',N,2),n('F♯',S,3),n('G',N,1),n('A',N,2),n('B',N,3),n('C♯',S,4),n('D',N,1),n('E',N,2),n('F♯',S,3),n('G',N,1),n('A',N,2),n('B',N,3),n('C♯',S,4),n('D',N,5)],
+        lh: [n('D',N,5),n('E',N,4),n('F♯',S,3),n('G',N,2),n('A',N,1),n('B',N,3),n('C♯',S,2),n('D',N,1),n('E',N,4),n('F♯',S,3),n('G',N,2),n('A',N,1),n('B',N,3),n('C♯',S,2),n('D',N,1)],
+      },
+      {
+        name: 'F Major', type: 'Major', octaves: 2,
+        rh: [n('F',N,1),n('G',N,2),n('A',N,3),n('B♭',F,4),n('C',N,1),n('D',N,2),n('E',N,3),n('F',N,1),n('G',N,2),n('A',N,3),n('B♭',F,4),n('C',N,1),n('D',N,2),n('E',N,3),n('F',N,4)],
+        lh: [n('F',N,5),n('G',N,4),n('A',N,3),n('B♭',F,2),n('C',N,1),n('D',N,3),n('E',N,2),n('F',N,1),n('G',N,4),n('A',N,3),n('B♭',F,2),n('C',N,1),n('D',N,3),n('E',N,2),n('F',N,1)],
+      },
+      {
+        name: 'A Minor', type: 'Natural Minor', octaves: 2,
+        rh: [n('A',N,1),n('B',N,2),n('C',N,3),n('D',N,1),n('E',N,2),n('F',N,3),n('G',N,4),n('A',N,1),n('B',N,2),n('C',N,3),n('D',N,1),n('E',N,2),n('F',N,3),n('G',N,4),n('A',N,5)],
+        lh: [n('A',N,5),n('B',N,4),n('C',N,3),n('D',N,2),n('E',N,1),n('F',N,3),n('G',N,2),n('A',N,1),n('B',N,4),n('C',N,3),n('D',N,2),n('E',N,1),n('F',N,3),n('G',N,2),n('A',N,1)],
+      },
+      {
+        name: 'D Minor', type: 'Natural Minor', octaves: 2,
+        rh: [n('D',N,1),n('E',N,2),n('F',N,3),n('G',N,1),n('A',N,2),n('B♭',F,3),n('C',N,4),n('D',N,1),n('E',N,2),n('F',N,3),n('G',N,1),n('A',N,2),n('B♭',F,3),n('C',N,4),n('D',N,5)],
+        lh: [n('D',N,5),n('E',N,4),n('F',N,3),n('G',N,2),n('A',N,1),n('B♭',F,3),n('C',N,2),n('D',N,1),n('E',N,4),n('F',N,3),n('G',N,2),n('A',N,1),n('B♭',F,3),n('C',N,2),n('D',N,1)],
+      },
+      {
+        name: 'E Minor', type: 'Natural Minor', octaves: 2,
+        rh: [n('E',N,1),n('F♯',S,2),n('G',N,3),n('A',N,1),n('B',N,2),n('C',N,3),n('D',N,4),n('E',N,1),n('F♯',S,2),n('G',N,3),n('A',N,1),n('B',N,2),n('C',N,3),n('D',N,4),n('E',N,5)],
+        lh: [n('E',N,5),n('F♯',S,4),n('G',N,3),n('A',N,2),n('B',N,1),n('C',N,3),n('D',N,2),n('E',N,1),n('F♯',S,4),n('G',N,3),n('A',N,2),n('B',N,1),n('C',N,3),n('D',N,2),n('E',N,1)],
+      },
+    ]
+  },
+  {
+    grade: 'Grade 2',
+    desc: 'A, E, B♭ major · B, C, F♯ minor',
+    scales: [
+      {
+        name: 'A Major', type: 'Major', octaves: 2,
+        rh: [n('A',N,1),n('B',N,2),n('C♯',S,3),n('D',N,1),n('E',N,2),n('F♯',S,3),n('G♯',S,4),n('A',N,1),n('B',N,2),n('C♯',S,3),n('D',N,1),n('E',N,2),n('F♯',S,3),n('G♯',S,4),n('A',N,5)],
+        lh: [n('A',N,5),n('B',N,4),n('C♯',S,3),n('D',N,2),n('E',N,1),n('F♯',S,3),n('G♯',S,2),n('A',N,1),n('B',N,4),n('C♯',S,3),n('D',N,2),n('E',N,1),n('F♯',S,3),n('G♯',S,2),n('A',N,1)],
+      },
+      {
+        name: 'E Major', type: 'Major', octaves: 2,
+        rh: [n('E',N,1),n('F♯',S,2),n('G♯',S,3),n('A',N,1),n('B',N,2),n('C♯',S,3),n('D♯',S,4),n('E',N,1),n('F♯',S,2),n('G♯',S,3),n('A',N,1),n('B',N,2),n('C♯',S,3),n('D♯',S,4),n('E',N,5)],
+        lh: [n('E',N,5),n('F♯',S,4),n('G♯',S,3),n('A',N,2),n('B',N,1),n('C♯',S,3),n('D♯',S,2),n('E',N,1),n('F♯',S,4),n('G♯',S,3),n('A',N,2),n('B',N,1),n('C♯',S,3),n('D♯',S,2),n('E',N,1)],
+      },
+      {
+        name: 'B♭ Major', type: 'Major', octaves: 2,
+        rh: [n('B♭',F,4),n('C',N,1),n('D',N,2),n('E♭',F,3),n('F',N,4),n('G',N,1),n('A',N,2),n('B♭',F,3),n('C',N,4),n('D',N,1),n('E♭',F,2),n('F',N,3),n('G',N,4),n('A',N,1),n('B♭',F,2)],
+        lh: [n('B♭',F,2),n('C',N,1),n('D',N,4),n('E♭',F,3),n('F',N,2),n('G',N,1),n('A',N,3),n('B♭',F,2),n('C',N,1),n('D',N,4),n('E♭',F,3),n('F',N,2),n('G',N,1),n('A',N,3),n('B♭',F,2)],
+      },
+      {
+        name: 'B Minor', type: 'Natural Minor', octaves: 2,
+        rh: [n('B',N,1),n('C♯',S,2),n('D',N,3),n('E',N,1),n('F♯',S,2),n('G',N,3),n('A',N,4),n('B',N,1),n('C♯',S,2),n('D',N,3),n('E',N,1),n('F♯',S,2),n('G',N,3),n('A',N,4),n('B',N,5)],
+        lh: [n('B',N,4),n('C♯',S,3),n('D',N,2),n('E',N,1),n('F♯',S,4),n('G',N,3),n('A',N,2),n('B',N,1),n('C♯',S,3),n('D',N,2),n('E',N,1),n('F♯',S,4),n('G',N,3),n('A',N,2),n('B',N,1)],
+      },
+      {
+        name: 'C Minor', type: 'Natural Minor', octaves: 2,
+        rh: [n('C',N,1),n('D',N,2),n('E♭',F,3),n('F',N,1),n('G',N,2),n('A♭',F,3),n('B♭',F,4),n('C',N,1),n('D',N,2),n('E♭',F,3),n('F',N,1),n('G',N,2),n('A♭',F,3),n('B♭',F,4),n('C',N,5)],
+        lh: [n('C',N,5),n('D',N,4),n('E♭',F,3),n('F',N,2),n('G',N,1),n('A♭',F,3),n('B♭',F,2),n('C',N,1),n('D',N,4),n('E♭',F,3),n('F',N,2),n('G',N,1),n('A♭',F,3),n('B♭',F,2),n('C',N,1)],
+      },
+      {
+        name: 'F♯ Minor', type: 'Natural Minor', octaves: 2,
+        rh: [n('F♯',S,2),n('G♯',S,3),n('A',N,4),n('B',N,1),n('C♯',S,2),n('D',N,3),n('E',N,4),n('F♯',S,1),n('G♯',S,2),n('A',N,3),n('B',N,4),n('C♯',S,1),n('D',N,2),n('E',N,3),n('F♯',S,4)],
+        lh: [n('F♯',S,4),n('G♯',S,3),n('A',N,2),n('B',N,1),n('C♯',S,3),n('D',N,2),n('E',N,1),n('F♯',S,4),n('G♯',S,3),n('A',N,2),n('B',N,1),n('C♯',S,3),n('D',N,2),n('E',N,1),n('F♯',S,2)],
+      },
+    ]
+  },
+  {
+    grade: 'Grade 3',
+    desc: 'B, E♭, A♭ major · G, C♯, G♯ minor + harmonic minors',
+    scales: [
+      {
+        name: 'B Major', type: 'Major', octaves: 2,
+        rh: [n('B',N,1),n('C♯',S,2),n('D♯',S,3),n('E',N,1),n('F♯',S,2),n('G♯',S,3),n('A♯',S,4),n('B',N,1),n('C♯',S,2),n('D♯',S,3),n('E',N,1),n('F♯',S,2),n('G♯',S,3),n('A♯',S,4),n('B',N,5)],
+        lh: [n('B',N,4),n('C♯',S,3),n('D♯',S,2),n('E',N,1),n('F♯',S,4),n('G♯',S,3),n('A♯',S,2),n('B',N,1),n('C♯',S,3),n('D♯',S,2),n('E',N,1),n('F♯',S,4),n('G♯',S,3),n('A♯',S,2),n('B',N,1)],
+      },
+      {
+        name: 'E♭ Major', type: 'Major', octaves: 2,
+        rh: [n('E♭',F,3),n('F',N,4),n('G',N,1),n('A♭',F,2),n('B♭',F,3),n('C',N,1),n('D',N,2),n('E♭',F,3),n('F',N,4),n('G',N,1),n('A♭',F,2),n('B♭',F,3),n('C',N,1),n('D',N,2),n('E♭',F,3)],
+        lh: [n('E♭',F,3),n('F',N,2),n('G',N,1),n('A♭',F,4),n('B♭',F,3),n('C',N,2),n('D',N,1),n('E♭',F,3),n('F',N,2),n('G',N,1),n('A♭',F,4),n('B♭',F,3),n('C',N,2),n('D',N,1),n('E♭',F,3)],
+      },
+      {
+        name: 'A♭ Major', type: 'Major', octaves: 2,
+        rh: [n('A♭',F,3),n('B♭',F,4),n('C',N,1),n('D♭',F,2),n('E♭',F,3),n('F',N,4),n('G',N,1),n('A♭',F,2),n('B♭',F,3),n('C',N,4),n('D♭',F,1),n('E♭',F,2),n('F',N,3),n('G',N,4),n('A♭',F,1)],
+        lh: [n('A♭',F,3),n('B♭',F,2),n('C',N,1),n('D♭',F,4),n('E♭',F,3),n('F',N,2),n('G',N,1),n('A♭',F,3),n('B♭',F,2),n('C',N,1),n('D♭',F,4),n('E♭',F,3),n('F',N,2),n('G',N,1),n('A♭',F,2)],
+      },
+      {
+        name: 'G Minor', type: 'Harmonic Minor', octaves: 2,
+        rh: [n('G',N,1),n('A',N,2),n('B♭',F,3),n('C',N,1),n('D',N,2),n('E♭',F,3),n('F♯',S,4),n('G',N,1),n('A',N,2),n('B♭',F,3),n('C',N,1),n('D',N,2),n('E♭',F,3),n('F♯',S,4),n('G',N,5)],
+        lh: [n('G',N,5),n('A',N,4),n('B♭',F,3),n('C',N,2),n('D',N,1),n('E♭',F,3),n('F♯',S,2),n('G',N,1),n('A',N,4),n('B♭',F,3),n('C',N,2),n('D',N,1),n('E♭',F,3),n('F♯',S,2),n('G',N,1)],
+      },
+      {
+        name: 'C♯ Minor', type: 'Harmonic Minor', octaves: 2,
+        rh: [n('C♯',S,2),n('D♯',S,3),n('E',N,4),n('F♯',S,1),n('G♯',S,2),n('A',N,3),n('B♯',S,4),n('C♯',S,1),n('D♯',S,2),n('E',N,3),n('F♯',S,1),n('G♯',S,2),n('A',N,3),n('B♯',S,4),n('C♯',S,5)],
+        lh: [n('C♯',S,3),n('D♯',S,2),n('E',N,1),n('F♯',S,4),n('G♯',S,3),n('A',N,2),n('B♯',S,1),n('C♯',S,3),n('D♯',S,2),n('E',N,1),n('F♯',S,4),n('G♯',S,3),n('A',N,2),n('B♯',S,1),n('C♯',S,2)],
+      },
+      {
+        name: 'G♯ Minor', type: 'Harmonic Minor', octaves: 2,
+        rh: [n('G♯',S,3),n('A♯',S,4),n('B',N,1),n('C♯',S,2),n('D♯',S,3),n('E',N,4),n('F𝄪',S,1),n('G♯',S,2),n('A♯',S,3),n('B',N,4),n('C♯',S,1),n('D♯',S,2),n('E',N,3),n('F𝄪',S,4),n('G♯',S,5)],
+        lh: [n('G♯',S,4),n('A♯',S,3),n('B',N,2),n('C♯',S,1),n('D♯',S,3),n('E',N,2),n('F𝄪',S,1),n('G♯',S,4),n('A♯',S,3),n('B',N,2),n('C♯',S,1),n('D♯',S,3),n('E',N,2),n('F𝄪',S,1),n('G♯',S,2)],
+      },
+    ]
+  },
+  {
+    grade: 'Grade 4',
+    desc: 'D♭, F♯, G♭ major · all harmonic & melodic minors from prev grades + new ones',
+    scales: [
+      {
+        name: 'D♭ Major', type: 'Major', octaves: 2,
+        rh: [n('D♭',F,2),n('E♭',F,3),n('F',N,4),n('G♭',F,1),n('A♭',F,2),n('B♭',F,3),n('C',N,4),n('D♭',F,1),n('E♭',F,2),n('F',N,3),n('G♭',F,4),n('A♭',F,1),n('B♭',F,2),n('C',N,3),n('D♭',F,4)],
+        lh: [n('D♭',F,3),n('E♭',F,2),n('F',N,1),n('G♭',F,4),n('A♭',F,3),n('B♭',F,2),n('C',N,1),n('D♭',F,3),n('E♭',F,2),n('F',N,1),n('G♭',F,4),n('A♭',F,3),n('B♭',F,2),n('C',N,1),n('D♭',F,2)],
+      },
+      {
+        name: 'F♯ Major', type: 'Major', octaves: 2,
+        rh: [n('F♯',S,2),n('G♯',S,3),n('A♯',S,4),n('B',N,1),n('C♯',S,2),n('D♯',S,3),n('E♯',S,4),n('F♯',S,1),n('G♯',S,2),n('A♯',S,3),n('B',N,4),n('C♯',S,1),n('D♯',S,2),n('E♯',S,3),n('F♯',S,4)],
+        lh: [n('F♯',S,4),n('G♯',S,3),n('A♯',S,2),n('B',N,1),n('C♯',S,3),n('D♯',S,2),n('E♯',S,1),n('F♯',S,4),n('G♯',S,3),n('A♯',S,2),n('B',N,1),n('C♯',S,3),n('D♯',S,2),n('E♯',S,1),n('F♯',S,2)],
+      },
+      {
+        name: 'G♭ Major', type: 'Major', octaves: 2,
+        rh: [n('G♭',F,2),n('A♭',F,3),n('B♭',F,4),n('C♭',F,1),n('D♭',F,2),n('E♭',F,3),n('F',N,4),n('G♭',F,1),n('A♭',F,2),n('B♭',F,3),n('C♭',F,4),n('D♭',F,1),n('E♭',F,2),n('F',N,3),n('G♭',F,4)],
+        lh: [n('G♭',F,4),n('A♭',F,3),n('B♭',F,2),n('C♭',F,1),n('D♭',F,3),n('E♭',F,2),n('F',N,1),n('G♭',F,4),n('A♭',F,3),n('B♭',F,2),n('C♭',F,1),n('D♭',F,3),n('E♭',F,2),n('F',N,1),n('G♭',F,2)],
+      },
+      {
+        name: 'A Minor', type: 'Harmonic Minor', octaves: 2,
+        rh: [n('A',N,1),n('B',N,2),n('C',N,3),n('D',N,1),n('E',N,2),n('F',N,3),n('G♯',S,4),n('A',N,1),n('B',N,2),n('C',N,3),n('D',N,1),n('E',N,2),n('F',N,3),n('G♯',S,4),n('A',N,5)],
+        lh: [n('A',N,5),n('B',N,4),n('C',N,3),n('D',N,2),n('E',N,1),n('F',N,3),n('G♯',S,2),n('A',N,1),n('B',N,4),n('C',N,3),n('D',N,2),n('E',N,1),n('F',N,3),n('G♯',S,2),n('A',N,1)],
+      },
+      {
+        name: 'D Minor', type: 'Harmonic Minor', octaves: 2,
+        rh: [n('D',N,1),n('E',N,2),n('F',N,3),n('G',N,1),n('A',N,2),n('B♭',F,3),n('C♯',S,4),n('D',N,1),n('E',N,2),n('F',N,3),n('G',N,1),n('A',N,2),n('B♭',F,3),n('C♯',S,4),n('D',N,5)],
+        lh: [n('D',N,5),n('E',N,4),n('F',N,3),n('G',N,2),n('A',N,1),n('B♭',F,3),n('C♯',S,2),n('D',N,1),n('E',N,4),n('F',N,3),n('G',N,2),n('A',N,1),n('B♭',F,3),n('C♯',S,2),n('D',N,1)],
+      },
+      {
+        name: 'E Minor', type: 'Harmonic Minor', octaves: 2,
+        rh: [n('E',N,1),n('F♯',S,2),n('G',N,3),n('A',N,1),n('B',N,2),n('C',N,3),n('D♯',S,4),n('E',N,1),n('F♯',S,2),n('G',N,3),n('A',N,1),n('B',N,2),n('C',N,3),n('D♯',S,4),n('E',N,5)],
+        lh: [n('E',N,5),n('F♯',S,4),n('G',N,3),n('A',N,2),n('B',N,1),n('C',N,3),n('D♯',S,2),n('E',N,1),n('F♯',S,4),n('G',N,3),n('A',N,2),n('B',N,1),n('C',N,3),n('D♯',S,2),n('E',N,1)],
+      },
+      {
+        name: 'A Minor', type: 'Melodic Minor', octaves: 2,
+        rh: [n('A',N,1),n('B',N,2),n('C',N,3),n('D',N,1),n('E',N,2),n('F♯',S,3),n('G♯',S,4),n('A',N,5)],
+        lh: [n('A',N,5),n('B',N,4),n('C',N,3),n('D',N,2),n('E',N,1),n('F♯',S,3),n('G♯',S,2),n('A',N,1)],
+        note: 'Ascending shown; descend using natural minor (G♮, F♮)'
+      },
+    ]
+  },
+  {
+    grade: 'Grade 5',
+    desc: 'C♭/B major · chromatic scale · all major & minor scales 2 octaves',
+    scales: [
+      {
+        name: 'C♭ Major (= B Major)', type: 'Major', octaves: 2,
+        rh: [n('C♭',F,1),n('D♭',F,2),n('E♭',F,3),n('F♭',F,1),n('G♭',F,2),n('A♭',F,3),n('B♭',F,4),n('C♭',F,1),n('D♭',F,2),n('E♭',F,3),n('F♭',F,1),n('G♭',F,2),n('A♭',F,3),n('B♭',F,4),n('C♭',F,5)],
+        lh: [n('C♭',F,5),n('D♭',F,4),n('E♭',F,3),n('F♭',F,2),n('G♭',F,1),n('A♭',F,3),n('B♭',F,2),n('C♭',F,1),n('D♭',F,4),n('E♭',F,3),n('F♭',F,2),n('G♭',F,1),n('A♭',F,3),n('B♭',F,2),n('C♭',F,1)],
+      },
+      {
+        name: 'Chromatic Scale (C)', type: 'Chromatic', octaves: 2,
+        rh: [n('C',N,1),n('C♯',S,3),n('D',N,1),n('D♯',S,3),n('E',N,1),n('F',N,2),n('F♯',S,4),n('G',N,1),n('G♯',S,3),n('A',N,1),n('A♯',S,3),n('B',N,1),n('C',N,2)],
+        lh: [n('C',N,1),n('C♯',S,3),n('D',N,2),n('D♯',S,1),n('E',N,2),n('F',N,1),n('F♯',S,3),n('G',N,2),n('G♯',S,1),n('A',N,2),n('A♯',S,1),n('B',N,3),n('C',N,2)],
+        note: 'Starting on C; examiners may ask any starting note. Pattern repeats for 2nd octave.'
+      },
+      {
+        name: 'B Minor', type: 'Melodic Minor', octaves: 2,
+        rh: [n('B',N,1),n('C♯',S,2),n('D',N,3),n('E',N,1),n('F♯',S,2),n('G♯',S,3),n('A♯',S,4),n('B',N,5)],
+        lh: [n('B',N,4),n('C♯',S,3),n('D',N,2),n('E',N,1),n('F♯',S,4),n('G♯',S,3),n('A♯',S,2),n('B',N,1)],
+        note: 'Ascending shown; descend with A♮, G♮'
+      },
+      {
+        name: 'C Minor', type: 'Harmonic Minor', octaves: 2,
+        rh: [n('C',N,1),n('D',N,2),n('E♭',F,3),n('F',N,1),n('G',N,2),n('A♭',F,3),n('B',N,4),n('C',N,1),n('D',N,2),n('E♭',F,3),n('F',N,1),n('G',N,2),n('A♭',F,3),n('B',N,4),n('C',N,5)],
+        lh: [n('C',N,5),n('D',N,4),n('E♭',F,3),n('F',N,2),n('G',N,1),n('A♭',F,3),n('B',N,2),n('C',N,1),n('D',N,4),n('E♭',F,3),n('F',N,2),n('G',N,1),n('A♭',F,3),n('B',N,2),n('C',N,1)],
+      },
+      {
+        name: 'F♯ Minor', type: 'Harmonic Minor', octaves: 2,
+        rh: [n('F♯',S,2),n('G♯',S,3),n('A',N,4),n('B',N,1),n('C♯',S,2),n('D',N,3),n('E♯',S,4),n('F♯',S,1),n('G♯',S,2),n('A',N,3),n('B',N,4),n('C♯',S,1),n('D',N,2),n('E♯',S,3),n('F♯',S,4)],
+        lh: [n('F♯',S,4),n('G♯',S,3),n('A',N,2),n('B',N,1),n('C♯',S,3),n('D',N,2),n('E♯',S,1),n('F♯',S,4),n('G♯',S,3),n('A',N,2),n('B',N,1),n('C♯',S,3),n('D',N,2),n('E♯',S,1),n('F♯',S,2)],
+      },
+    ]
+  },
+  {
+    grade: 'Grade 6',
+    desc: 'All major & minor scales 3 octaves · contrary motion · arpeggios',
+    scales: [
+      {
+        name: 'C Major', type: 'Major — 3 octaves', octaves: 3,
+        rh: [n('C',N,1),n('D',N,2),n('E',N,3),n('F',N,1),n('G',N,2),n('A',N,3),n('B',N,4),n('C',N,1),n('D',N,2),n('E',N,3),n('F',N,1),n('G',N,2),n('A',N,3),n('B',N,4),n('C',N,1),n('D',N,2),n('E',N,3),n('F',N,1),n('G',N,2),n('A',N,3),n('B',N,4),n('C',N,5)],
+        lh: [n('C',N,5),n('D',N,4),n('E',N,3),n('F',N,2),n('G',N,1),n('A',N,3),n('B',N,2),n('C',N,1),n('D',N,4),n('E',N,3),n('F',N,2),n('G',N,1),n('A',N,3),n('B',N,2),n('C',N,1),n('D',N,4),n('E',N,3),n('F',N,2),n('G',N,1),n('A',N,3),n('B',N,2),n('C',N,1)],
+      },
+      {
+        name: 'C Major', type: 'Contrary Motion', octaves: 2,
+        rh: [n('C',N,1),n('D',N,2),n('E',N,3),n('F',N,1),n('G',N,2),n('A',N,3),n('B',N,4),n('C',N,5)],
+        lh: [n('C',N,1),n('B',N,2),n('A',N,3),n('G',N,1),n('F',N,2),n('E',N,3),n('D',N,4),n('C',N,5)],
+        note: 'Both hands start on C and move in opposite directions simultaneously'
+      },
+      {
+        name: 'G Major', type: 'Major — 3 octaves', octaves: 3,
+        rh: [n('G',N,1),n('A',N,2),n('B',N,3),n('C',N,1),n('D',N,2),n('E',N,3),n('F♯',S,4),n('G',N,1),n('A',N,2),n('B',N,3),n('C',N,1),n('D',N,2),n('E',N,3),n('F♯',S,4),n('G',N,1),n('A',N,2),n('B',N,3),n('C',N,1),n('D',N,2),n('E',N,3),n('F♯',S,4),n('G',N,5)],
+        lh: [n('G',N,5),n('A',N,4),n('B',N,3),n('C',N,2),n('D',N,1),n('E',N,3),n('F♯',S,2),n('G',N,1),n('A',N,4),n('B',N,3),n('C',N,2),n('D',N,1),n('E',N,3),n('F♯',S,2),n('G',N,1),n('A',N,4),n('B',N,3),n('C',N,2),n('D',N,1),n('E',N,3),n('F♯',S,2),n('G',N,1)],
+      },
+      {
+        name: 'A Minor', type: 'Melodic Minor — 3 octaves', octaves: 3,
+        rh: [n('A',N,1),n('B',N,2),n('C',N,3),n('D',N,1),n('E',N,2),n('F♯',S,3),n('G♯',S,4),n('A',N,1),n('B',N,2),n('C',N,3),n('D',N,1),n('E',N,2),n('F♯',S,3),n('G♯',S,4),n('A',N,5)],
+        lh: [n('A',N,5),n('B',N,4),n('C',N,3),n('D',N,2),n('E',N,1),n('F♯',S,3),n('G♯',S,2),n('A',N,1),n('B',N,4),n('C',N,3),n('D',N,2),n('E',N,1),n('F♯',S,3),n('G♯',S,2),n('A',N,1)],
+        note: 'Ascending shown (raised 6th & 7th). Descend using G♮, F♮ (natural minor).'
+      },
+    ]
+  },
+  {
+    grade: 'Grade 7',
+    desc: 'All major & minor 4 octaves · dominant & diminished 7th arpeggios',
+    scales: [
+      {
+        name: 'C Major', type: 'Major — 4 octaves', octaves: 4,
+        rh: [n('C',N,1),n('D',N,2),n('E',N,3),n('F',N,1),n('G',N,2),n('A',N,3),n('B',N,4),n('C',N,1)],
+        lh: [n('C',N,5),n('D',N,4),n('E',N,3),n('F',N,2),n('G',N,1),n('A',N,3),n('B',N,2),n('C',N,1)],
+        note: '4 octaves: the fingering pattern repeats each octave. Shown here is 1 octave pattern.'
+      },
+      {
+        name: 'All Scales', type: 'Summary note', octaves: 4,
+        rh: [],
+        lh: [],
+        note: 'At Grade 7, ALL major and minor scales (harmonic & melodic) are required at 4 octaves. Fingering follows established patterns from lower grades. Dominant 7th and diminished 7th arpeggios are also required.'
+      },
+      {
+        name: 'Chromatic (any note)', type: 'Chromatic — 4 octaves', octaves: 4,
+        rh: [n('C',N,1),n('C♯',S,3),n('D',N,1),n('D♯',S,3),n('E',N,1),n('F',N,2),n('F♯',S,4),n('G',N,1),n('G♯',S,3),n('A',N,1),n('A♯',S,3),n('B',N,1),n('C',N,2)],
+        lh: [n('C',N,1),n('C♯',S,3),n('D',N,2),n('D♯',S,1),n('E',N,2),n('F',N,1),n('F♯',S,3),n('G',N,2),n('G♯',S,1),n('A',N,2),n('A♯',S,1),n('B',N,3),n('C',N,2)],
+        note: '4-octave chromatic. Same fingering pattern as Grade 5; examiners may request any starting note.'
+      },
+    ]
+  },
+  {
+    grade: 'Grade 8',
+    desc: 'All scales · double thirds · sixths · octaves · contrary motion',
+    scales: [
+      {
+        name: 'Double Thirds (C)', type: 'Double Thirds', octaves: 2,
+        rh: [n('C/E',N,1),n('D/F',N,2),n('E/G',N,3),n('F/A',N,1),n('G/B',N,2),n('A/C',N,3),n('B/D',N,4),n('C/E',N,5)],
+        lh: [],
+        note: 'RH plays pairs of notes a third apart simultaneously. LH plays single-note scale. Requires very advanced control. Standard RH fingering for thirds shown.'
+      },
+      {
+        name: 'Sixths (C)', type: 'Double Sixths', octaves: 2,
+        rh: [n('C/A',N,1),n('D/B',N,2),n('E/C',N,1),n('F/D',N,2),n('G/E',N,1),n('A/F',N,2),n('B/G',N,1),n('C/A',N,2)],
+        lh: [],
+        note: 'RH plays intervals of a sixth simultaneously. Challenging coordination exercise at this grade.'
+      },
+      {
+        name: 'Octaves (C)', type: 'Octave Scale', octaves: 2,
+        rh: [n('C',N,1),n('D',N,1),n('E',N,1),n('F',N,1),n('G',N,1),n('A',N,1),n('B',N,1),n('C',N,1)],
+        lh: [n('C',N,5),n('D',N,5),n('E',N,5),n('F',N,5),n('G',N,5),n('A',N,5),n('B',N,5),n('C',N,5)],
+        note: 'Each note played as an octave (thumb + 5th finger). Requires wrist flexibility and relaxed arm weight.'
+      },
+      {
+        name: 'All Major & Minor', type: '4 octaves + ornamental forms', octaves: 4,
+        rh: [], lh: [],
+        note: 'All major and minor (harmonic & melodic) scales at 4 octaves. Plus contrary motion, dominant/diminished 7th arpeggios in all keys, and chromatic scales starting on any note.'
+      },
+    ]
+  },
+];
+
+// ─────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────
+
+const nav = document.getElementById('gradeNav');
+const main = document.getElementById('main');
+
+GRADES.forEach((g, gi) => {
+  // Nav button
+  const btn = document.createElement('button');
+  btn.textContent = g.grade;
+  btn.dataset.gi = gi;
+  if (gi === 0) btn.classList.add('active');
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.grade-section').forEach(s => s.classList.remove('active'));
+    document.getElementById('grade-' + gi).classList.add('active');
+  });
+  nav.appendChild(btn);
+
+  // Section
+  const sec = document.createElement('div');
+  sec.className = 'grade-section' + (gi === 0 ? ' active' : '');
+  sec.id = 'grade-' + gi;
+
+  const hdr = document.createElement('div');
+  hdr.className = 'grade-header';
+  hdr.innerHTML = `<div class="grade-title">${g.grade}</div><div class="grade-subtitle">${g.desc}</div>`;
+  sec.appendChild(hdr);
+
+  const grid = document.createElement('div');
+  grid.className = 'scales-grid';
+
+  g.scales.forEach(scale => {
+    const card = document.createElement('div');
+    card.className = 'scale-card';
+
+    card.innerHTML = `
+      <div class="scale-card-header">
+        <div>
+          <div class="scale-name">${scale.name}</div>
+          <div class="scale-type">${scale.type}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          <span class="octave-badge">${scale.octaves} oct.</span>
+          <span class="toggle-icon">▾</span>
+        </div>
+      </div>
+      <div class="scale-body">${renderScaleBody(scale)}</div>
+    `;
+
+    card.querySelector('.scale-card-header').addEventListener('click', () => {
+      card.classList.toggle('open');
+    });
+
+    grid.appendChild(card);
+  });
+
+  sec.appendChild(grid);
+  main.appendChild(sec);
+});
+
+function renderScaleBody(scale) {
+  let html = '';
+
+  if (scale.rh && scale.rh.length > 0) {
+    html += `<div class="hand-section">
+      <div class="hand-label rh">Right Hand</div>
+      <div class="notes-row">${renderNotes(scale.rh)}</div>
+    </div>`;
+  }
+
+  if (scale.lh && scale.lh.length > 0) {
+    html += `<div class="hand-section">
+      <div class="hand-label lh">Left Hand</div>
+      <div class="notes-row">${renderNotes(scale.lh)}</div>
+    </div>`;
+  }
+
+  if (scale.note) {
+    html += `<div class="note-count" style="margin-top:0.75rem;color:var(--accent2);font-size:0.7rem;line-height:1.5;border-left:2px solid var(--accent2);padding-left:0.5rem">ℹ ${scale.note}</div>`;
+  }
+
+  return html;
+}
+
+function renderNotes(notes) {
+  return notes.map(({ note, cls, finger }) => {
+    const isThumb = finger === 1;
+    const fingerLabel = isThumb ? '★' : finger;
+    const fingerClass = isThumb ? 'finger thumb' : 'finger';
+    return `<div class="note-cell">
+      <div class="${fingerClass}">${fingerLabel}</div>
+      <div class="note-name ${cls}">${note}</div>
+    </div>`;
+  }).join('');
+}
+</script>
+
+</body>
 </html>
