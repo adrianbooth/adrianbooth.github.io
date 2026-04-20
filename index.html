@@ -158,13 +158,12 @@ footer { text-align: center; padding: 2rem 1rem; border-top: 1px solid var(--bor
   <div class="legend-item"><div class="dot" style="background:var(--notehead)"></div> Natural</div>
   <div class="legend-item" style="color:var(--rh-col)">━ Treble / Right Hand</div>
   <div class="legend-item" style="color:var(--lh-col)">━ Bass / Left Hand</div>
-  <div class="legend-item" style="color:var(--accent)">★ = Thumb (1)</div>
 </div>
 
 <nav id="gradeNav"></nav>
 <main id="main"></main>
 
-<footer>Fingering follows standard Trinity/ABRSM conventions. Numbers above staff = RH fingers, below = LH fingers. ★ marks the thumb (finger 1).</footer>
+<footer>Fingering follows standard Trinity/ABRSM conventions. Numbers above staff = RH fingers, below = LH fingers.</footer>
 
 <script>
 // ─── NOTATION HELPERS ──────────────────────────────────────────────────────
@@ -1275,7 +1274,7 @@ function buildStaffSVG(notes, clef, fingerColor) {
 
     const col = noteColor(acc);
     const isThumb = finger === 1;
-    const fingerLabel = isThumb ? '★' : String(finger);
+    const fingerLabel = String(finger);
     const fCol = isThumb ? 'var(--accent)' : fingerColor;
 
     // ── Ledger lines ────────────────────────────────────────────────────
