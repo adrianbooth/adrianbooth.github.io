@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trinity Piano Scales</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e12;
+    --surface: #16161e;
+    --card: #1c1c26;
+    --border: #2a2a3a;
+    --accent: #c8a97e;
+    --accent2: #7e9fc8;
+    --rh-col: #e8b4a0;
+    --lh-col: #a0c8b4;
+    --text: #e8e6e0;
+    --muted: #6e6e82;
+    --sharp-col: #f0c060;
+    --flat-col: #88b8f0;
+    --natural-col: #d0d0c8;
+    --staff-line: #4a4a60;
+    --notehead: #e8e6e0;
+    --notehead-sharp: #f0c060;
+    --notehead-flat: #88b8f0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; }
+
+header {
+text-align: center; padding: 2.5rem 1rem 1.5rem;
+border-bottom: 1px solid var(--border);
+background: radial-gradient(ellipse at 50% 0%, rgba(200,169,126,0.10) 0%, transparent 70%);
+}
+h1 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem,4vw,3rem); font-weight: 900; color: var(--accent); }
+header p { margin-top: 0.5rem; color: var(--muted); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; }
+
+.legend {
+display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap;
+padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.68rem; letter-spacing: 0.05em;
+}
+.legend-item { display: flex; align-items: center; gap: 0.35rem; }
+.dot { width: 9px; height: 9px; border-radius: 50%; }
+
+nav {
+display: flex; gap: 0.4rem; padding: 0.8rem 1rem; overflow-x: auto;
+border-bottom: 1px solid var(--border); scrollbar-width: none; justify-content: center; flex-wrap: wrap;
+}
+nav button {
+background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+padding: 0.3rem 0.7rem; border-radius: 4px; font-family: 'DM Mono', monospace;
+font-size: 0.68rem; cursor: pointer; white-space: nowrap; transition: all 0.15s; letter-spacing: 0.05em;
+}
+nav button:hover, nav button.active { border-color: var(--accent); color: var(--accent); background: rgba(200,169,126,0.08); }
+
+main { padding: 1.5rem 1rem; max-width: 1200px; margin: 0 auto; }
+.grade-section { display: none; }
+.grade-section.active { display: block; }
+
+.grade-header { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+.grade-title { font-family: 'Playfair Display', serif; font-size: 1.7rem; color: var(--accent); font-weight: 700; }
+.grade-subtitle { color: var(--muted); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+.scales-grid { display: grid; gap: 1.2rem; }
+@media(min-width:700px) { .scales-grid { grid-template-columns: 1fr; } }
+
+.scale-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.scale-card-header {
+display: flex; align-items: center; justify-content: space-between;
+padding: 0.7rem 1rem; background: var(--surface); border-bottom: 1px solid var(--border);
+cursor: pointer; user-select: none;
+}
+.scale-name { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--text); }
+.scale-type { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 0.1rem; }
+.octave-badge { font-size: 0.6rem; padding: 0.18rem 0.45rem; border-radius: 3px; background: rgba(126,159,200,0.12); color: var(--accent2); border: 1px solid rgba(126,159,200,0.28); letter-spacing: 0.07em; }
+.toggle-icon { color: var(--muted); font-size: 0.75rem; transition: transform 0.2s; margin-left: 0.6rem; }
+.scale-card.open .toggle-icon { transform: rotate(180deg); }
+.scale-body { display: none; padding: 1rem; }
+.scale-card.open .scale-body { display: block; }
+
+/* Finger row */
+.hand-label { font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.4rem; }
+.hand-label.rh { color: var(--rh-col); }
+.hand-label.lh { color: var(--lh-col); }
+
+/* Staff wrapper */
+.staff-section { margin-bottom: 1.2rem; overflow-x: auto; padding-bottom: 0.3rem; }
+.staff-section::-webkit-scrollbar { height: 4px; }
+.staff-section::-webkit-scrollbar-track { background: var(--surface); }
+.staff-section::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.info-note {
+font-size: 0.65rem; color: var(--accent2); margin-top: 0.6rem; line-height: 1.5;
+border-left: 2px solid var(--accent2); padding-left: 0.5rem;
+}
+
+footer { text-align: center; padding: 2rem 1rem; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.65rem; letter-spacing: 0.08em; }
+
+/* Set A / Set B tabs */
+.set-tabs { display: flex; gap: 0.4rem; margin-bottom: 1.2rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+.set-tabs button {
+  background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+  padding: 0.4rem 1rem; border-radius: 4px; font-family: 'DM Mono', monospace;
+  font-size: 0.7rem; cursor: pointer; letter-spacing: 0.12em; transition: all 0.15s;
+  text-transform: uppercase;
+}
+.set-tabs button.active { border-color: var(--accent); color: var(--accent); background: rgba(200,169,126,0.1); }
+.set-panel { display: none; }
+.set-panel.active { display: block; }
+
+.set-summary {
+  font-size: 0.65rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.6;
+  padding: 0.6rem 0.8rem; background: var(--surface); border-radius: 4px; border-left: 2px solid var(--accent);
+}
+.set-summary b { color: var(--text); font-weight: 500; }
+
+/* Category + hand badges on each card header */
+.badges { display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; margin-top: 0.25rem; }
+.badge {
+  font-size: 0.55rem; padding: 0.12rem 0.4rem; border-radius: 3px; letter-spacing: 0.08em;
+  text-transform: uppercase; border: 1px solid var(--border); color: var(--muted);
+  background: rgba(255,255,255,0.02); font-family: 'DM Mono', monospace;
+}
+.badge.cat-scale { color: var(--accent); border-color: rgba(200,169,126,0.3); }
+.badge.cat-broken-chord, .badge.cat-arpeggio, .badge.cat-dom7, .badge.cat-dim7 { color: var(--accent2); border-color: rgba(126,159,200,0.3); }
+.badge.cat-thirds { color: var(--rh-col); border-color: rgba(232,180,160,0.3); }
+.badge.cat-contrary, .badge.cat-chromatic { color: var(--lh-col); border-color: rgba(160,200,180,0.3); }
+.badge.hands-together { color: #c8a0d0; border-color: rgba(200,160,208,0.35); background: rgba(200,160,208,0.05); }
+.badge.hands-contrary { color: #e0b080; border-color: rgba(224,176,128,0.35); background: rgba(224,176,128,0.05); }
+.badge.hands-separate { color: var(--muted); }
+
+/* Minor-mode variants (harmonic / melodic / natural) stacked inside one card */
+.variant-section { margin-bottom: 1.3rem; padding-bottom: 1rem; border-bottom: 1px dashed var(--border); }
+.variant-section:last-of-type { border-bottom: none; margin-bottom: 0.3rem; padding-bottom: 0.2rem; }
+.variant-label { font-size: 0.65rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.6rem; font-weight: 500; }
+
+.required-hand-note {
+  font-size: 0.68rem; color: var(--text); margin-bottom: 1rem; line-height: 1.5;
+  padding: 0.55rem 0.8rem; background: rgba(200,169,126,0.08); border-radius: 4px;
+  border-left: 2px solid var(--accent);
+}
+.required-hand-note b { color: var(--accent); font-weight: 600; }
+</style>
+
+</head>
+<body>
+
+<header>
+  <h1>Trinity Piano Scales</h1>
+  <p>Initial · Grades 1–8 · Grand Staff · Notes & Fingering</p>
+</header>
+
+<div class="legend">
+  <div class="legend-item"><div class="dot" style="background:var(--notehead-sharp)"></div> Sharp</div>
+  <div class="legend-item"><div class="dot" style="background:var(--notehead-flat)"></div> Flat</div>
+  <div class="legend-item"><div class="dot" style="background:var(--notehead)"></div> Natural</div>
+  <div class="legend-item" style="color:var(--rh-col)">━ Treble / Right Hand</div>
+  <div class="legend-item" style="color:var(--lh-col)">━ Bass / Left Hand</div>
+</div>
+
+<nav id="gradeNav"></nav>
+<main id="main"></main>
+
+<footer>Fingering follows standard Trinity/ABRSM conventions. Numbers above staff = RH fingers, below = LH fingers.</footer>
+
+<script>
+// ─── NOTATION HELPERS ──────────────────────────────────────────────────────
+// Each note on the staff is stored as {l, a, o, f}:
+//   l — natural letter A–G
+//   a — accidental: '', '♯', '♭', '𝄪'
+//   o — octave number (scientific pitch notation, middle C = C4)
+//   f — fingering number 1–5 (1 = thumb, rendered as a ★)
+// Optional l2/a2/o2 on a note adds a parallel voice in the same column (used
+// for scales in 3rds at Grade 6+).
+
+const LETTER_RANK = {C:0, D:1, E:2, F:3, G:4, A:5, B:6};
+
+function n(l,a,o,f){return{l,a,o,f};}
+
+function parsePitch(s) {
+  const l = s[0];
+  const ch = s[1] || '';
+  let a = '';
+  if (ch === 'b') a = '♭';
+  else if (ch === '#') a = '♯';
+  else if (ch === 'x') a = '𝄪';
+  return {l, a};
+}
+
+// Ascending sequence — octave bumps up when the letter wraps B→C.
+function seq(letters, startOct, fingering) {
+  const out = []; let oct = startOct, prev = null;
+  letters.forEach((lt, i) => {
+    const {l, a} = parsePitch(lt);
+    const rank = LETTER_RANK[l];
+    if (prev !== null && rank < prev) oct++;
+    out.push(n(l, a, oct, fingering[i])); prev = rank;
+  });
+  return out;
+}
+
+// Descending sequence — octave drops when the letter jumps up.
+function descSeq(letters, startOct, fingering) {
+  const out = []; let oct = startOct, prev = null;
+  letters.forEach((lt, i) => {
+    const {l, a} = parsePitch(lt);
+    const rank = LETTER_RANK[l];
+    if (prev !== null && rank > prev) oct--;
+    out.push(n(l, a, oct, fingering[i])); prev = rank;
+  });
+  return out;
+}
+
+function scaleLetters(oneOct, octaves) {
+  const out = [];
+  for (let i = 0; i < octaves; i++) out.push(...oneOct);
+  out.push(oneOct[0]);
+  return out;
+}
+
+// Combine two single-line scales into a parallel-voice line (for "in 3rds" scales).
+// If the upper voice is shorter than the lower (e.g. lower is round-trip
+// via scl(), upper is asc-only via seq()), auto-mirror the upper to match.
+function pairVoices(lower, upper, fingering) {
+  if (upper.length < lower.length) {
+    const mirrored = [...upper].reverse().slice(1);
+    upper = [...upper, ...mirrored];
+  }
+  return lower.map((lo, i) => ({
+    l: lo.l, a: lo.a, o: lo.o,
+    l2: upper[i].l, a2: upper[i].a, o2: upper[i].o,
+    f: fingering ? fingering[i] : lo.f
+  }));
+}
+
+// ─── SCALE PITCH TABLE ────────────────────────────────────────────────────
+// 7 ascending pitches per scale, starting on the tonic.
+// Suffixes: -n = natural minor, -h = harmonic minor, -m = melodic minor (asc.)
+const SP = {
+  'C':['C','D','E','F','G','A','B'],          'G':['G','A','B','C','D','E','F#'],
+  'D':['D','E','F#','G','A','B','C#'],        'A':['A','B','C#','D','E','F#','G#'],
+  'E':['E','F#','G#','A','B','C#','D#'],      'B':['B','C#','D#','E','F#','G#','A#'],
+  'F#':['F#','G#','A#','B','C#','D#','E#'],
+  'F':['F','G','A','Bb','C','D','E'],         'Bb':['Bb','C','D','Eb','F','G','A'],
+  'Eb':['Eb','F','G','Ab','Bb','C','D'],      'Ab':['Ab','Bb','C','Db','Eb','F','G'],
+  'Db':['Db','Eb','F','Gb','Ab','Bb','C'],
+  'Am-n':['A','B','C','D','E','F','G'],       'Dm-n':['D','E','F','G','A','Bb','C'],
+  'Em-n':['E','F#','G','A','B','C','D'],      'Bm-n':['B','C#','D','E','F#','G','A'],
+  'Gm-n':['G','A','Bb','C','D','Eb','F'],     'Cm-n':['C','D','Eb','F','G','Ab','Bb'],
+  'F#m-n':['F#','G#','A','B','C#','D','E'],   'Fm-n':['F','G','Ab','Bb','C','Db','Eb'],
+  'C#m-n':['C#','D#','E','F#','G#','A','B'],  'G#m-n':['G#','A#','B','C#','D#','E','F#'],
+  'Bbm-n':['Bb','C','Db','Eb','F','Gb','Ab'], 'Ebm-n':['Eb','F','Gb','Ab','Bb','Cb','Db'],
+  'Am-h':['A','B','C','D','E','F','G#'],      'Dm-h':['D','E','F','G','A','Bb','C#'],
+  'Em-h':['E','F#','G','A','B','C','D#'],     'Bm-h':['B','C#','D','E','F#','G','A#'],
+  'Gm-h':['G','A','Bb','C','D','Eb','F#'],    'Cm-h':['C','D','Eb','F','G','Ab','B'],
+  'F#m-h':['F#','G#','A','B','C#','D','E#'],  'Fm-h':['F','G','Ab','Bb','C','Db','E'],
+  'C#m-h':['C#','D#','E','F#','G#','A','B#'], 'G#m-h':['G#','A#','B','C#','D#','E','Fx'],
+  'Bbm-h':['Bb','C','Db','Eb','F','Gb','A'],  'Ebm-h':['Eb','F','Gb','Ab','Bb','Cb','D'],
+  'Am-m':['A','B','C','D','E','F#','G#'],     'Dm-m':['D','E','F','G','A','B','C#'],
+  'Em-m':['E','F#','G','A','B','C#','D#'],    'Bm-m':['B','C#','D','E','F#','G#','A#'],
+  'Gm-m':['G','A','Bb','C','D','E','F#'],     'Cm-m':['C','D','Eb','F','G','A','B'],
+  'F#m-m':['F#','G#','A','B','C#','D#','E#'], 'Fm-m':['F','G','Ab','Bb','C','D','E'],
+  'C#m-m':['C#','D#','E','F#','G#','A#','B#'],'G#m-m':['G#','A#','B','C#','D#','E#','Fx'],
+  'Bbm-m':['Bb','C','Db','Eb','F','G','A'],   'Ebm-m':['Eb','F','Gb','Ab','Bb','C','D'],
+};
+
+// Major triads (1, 3, 5) and minor triads (1, ♭3, 5)
+const AP = {
+  'C':['C','E','G'],   'G':['G','B','D'],   'D':['D','F#','A'],  'A':['A','C#','E'],
+  'E':['E','G#','B'],  'B':['B','D#','F#'], 'F#':['F#','A#','C#'],
+  'F':['F','A','C'],   'Bb':['Bb','D','F'], 'Eb':['Eb','G','Bb'],
+  'Ab':['Ab','C','Eb'],'Db':['Db','F','Ab'],
+  'Am':['A','C','E'],  'Dm':['D','F','A'],  'Em':['E','G','B'],  'Gm':['G','Bb','D'],
+  'Cm':['C','Eb','G'], 'Fm':['F','Ab','C'], 'Bm':['B','D','F#'], 'F#m':['F#','A','C#'],
+  'C#m':['C#','E','G#'],'G#m':['G#','B','D#'], 'Bbm':['Bb','Db','F'], 'Ebm':['Eb','Gb','Bb'],
+};
+
+// Dominant 7th — keyed by the MAJOR key whose V7 it is.
+const DOM7 = {
+  'Bb':['F','A','C','Eb'], 'D':['A','C#','E','G'], 'E':['B','D#','F#','A'],
+  'Ab':['Eb','G','Bb','Db'],'B':['F#','A#','C#','E'], 'F#':['C#','E#','G#','B'],
+};
+
+// Diminished 7th — practical enharmonic spellings.
+const DIM7 = {
+  'B':['B','D','F','Ab'], 'D':['D','F','Ab','B'], 'Bb':['Bb','Db','E','G'],
+  'Ab':['Ab','B','D','F'],'E':['E','G','Bb','Db'],'F#':['F#','A','C','Eb'],
+  'Eb':['Eb','Gb','A','C'],
+};
+
+// ─── PATTERN BUILDERS ─────────────────────────────────────────────────────
+
+// Build an ascending-then-descending line from the given ascending letters.
+// The top note is shared (not duplicated). If descLetters/descFingering are
+// omitted, the ascending ones are reversed.
+function ascDesc(ascLetters, startOct, ascFingering, descLetters, descFingering) {
+  const asc = seq(ascLetters, startOct, ascFingering);
+  const dLetters = descLetters || [...ascLetters].reverse().slice(1);
+  const dFingering = descFingering || ascFingering.slice(0, -1).reverse();
+  const topOct = asc[asc.length - 1].o;
+  const topLetter = ascLetters[ascLetters.length - 1];
+  // If the first descending letter has a higher rank than the top (e.g. top
+  // C → descending B), B lives in the octave *below* the top.
+  const firstDescRank = LETTER_RANK[dLetters[0][0]];
+  const topRank = LETTER_RANK[topLetter[0]];
+  const descStartOct = firstDescRank > topRank ? topOct - 1 : topOct;
+  const desc = descSeq(dLetters, descStartOct, dFingering);
+  return [...asc, ...desc];
+}
+
+// Build a descending-then-ascending line (used for contrary-motion LH and
+// descending chromatic round-trips). Starts at startOct, descends, then
+// comes back up to the original pitch.
+function descAsc(descLetters, startOct, descFingering, ascLetters, ascFingering) {
+  const desc = descSeq(descLetters, startOct, descFingering);
+  const aLetters = ascLetters || [...descLetters].reverse().slice(1);
+  const aFingering = ascFingering || descFingering.slice(0, -1).reverse();
+  const bottomOct = desc[desc.length - 1].o;
+  const bottomLetter = descLetters[descLetters.length - 1];
+  // If the first ascending letter has a lower rank than the bottom (e.g.
+  // bottom B → ascending C), that C is in the octave *above* the bottom.
+  const firstAscRank = LETTER_RANK[aLetters[0][0]];
+  const bottomRank = LETTER_RANK[bottomLetter[0]];
+  const ascStartOct = firstAscRank < bottomRank ? bottomOct + 1 : bottomOct;
+  const asc = seq(aLetters, ascStartOct, aFingering);
+  return [...desc, ...asc];
+}
+
+// N-octave ascending-then-descending scale. Melodic minors (keys ending in
+// "m-m") descend as natural minor by convention — any explicit descModeKey
+// overrides this.
+function scl(modeKey, octaves, startOct, fingering, descModeKey) {
+  const ascLetters = scaleLetters(SP[modeKey], octaves);
+  const effectiveDescKey = descModeKey
+    || (modeKey.endsWith('m-m') ? modeKey.slice(0, -1) + 'n' : modeKey);
+  if (effectiveDescKey !== modeKey && SP[effectiveDescKey]) {
+    const descLetters = [...scaleLetters(SP[effectiveDescKey], octaves)].reverse().slice(1);
+    return ascDesc(ascLetters, startOct, fingering, descLetters);
+  }
+  return ascDesc(ascLetters, startOct, fingering);
+}
+
+function arp(triadKey, octaves, startOct, fingering) {
+  const t = AP[triadKey]; const letters = [];
+  for (let i = 0; i < octaves; i++) letters.push(...t);
+  letters.push(t[0]);
+  return ascDesc(letters, startOct, fingering);
+}
+
+function brokenTo5(triadKey, startOct, fingering) {
+  const t = AP[triadKey];
+  const up = seq([t[0], t[1], t[2]], startOct, fingering.slice(0, 3));
+  const down = [
+    n(up[1].l, up[1].a, up[1].o, fingering[3]),
+    n(up[0].l, up[0].a, up[0].o, fingering[4]),
+  ];
+  return [...up, ...down];
+}
+
+function broken1Oct(triadKey, startOct, fingering) {
+  const t = AP[triadKey];
+  const up = seq([t[0], t[1], t[2], t[0]], startOct, fingering.slice(0,4));
+  const down = [
+    n(up[2].l, up[2].a, up[2].o, fingering[4]),
+    n(up[1].l, up[1].a, up[1].o, fingering[5]),
+    n(up[0].l, up[0].a, up[0].o, fingering[6]),
+  ];
+  return [...up, ...down];
+}
+
+function dom7(keyName, octaves, startOct, fingering) {
+  const c = DOM7[keyName]; const letters = [];
+  for (let i = 0; i < octaves; i++) letters.push(...c);
+  letters.push(c[0]);
+  return ascDesc(letters, startOct, fingering);
+}
+
+function dim7(rootName, octaves, startOct, fingering) {
+  const c = DIM7[rootName]; const letters = [];
+  for (let i = 0; i < octaves; i++) letters.push(...c);
+  letters.push(c[0]);
+  return ascDesc(letters, startOct, fingering);
+}
+
+const PC = {C:0,'C#':1,Db:1,D:2,'D#':3,Eb:3,E:4,Fb:4,F:5,'E#':5,'F#':6,Gb:6,G:7,'G#':8,Ab:8,A:9,'A#':10,Bb:10,B:11,Cb:11,'B#':0};
+
+const SHARPS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const FLATS  = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+
+// Ascending chromatic that rounds back to start: sharps on the way up,
+// flats on the way back down.
+function chromAsc(startLetter, octaves, startOct, fingering) {
+  const startPC = PC[startLetter];
+  const N = 12 * octaves;
+  const ascLetters = [startLetter];
+  for (let step = 1; step <= N; step++) {
+    const pc = (startPC + step) % 12;
+    ascLetters.push(step === N ? startLetter : SHARPS[pc]);
+  }
+  const descLetters = [];
+  for (let step = 1; step <= N; step++) {
+    const pc = ((startPC - step) % 12 + 12) % 12;
+    descLetters.push(step === N ? startLetter : FLATS[pc]);
+  }
+  return ascDesc(ascLetters, startOct, fingering, descLetters);
+}
+
+// Descending chromatic that rounds back to start: flats on the way down,
+// sharps on the way back up.
+function chromDesc(startLetter, octaves, startOct, fingering) {
+  const startPC = PC[startLetter];
+  const N = 12 * octaves;
+  const descLetters = [startLetter];
+  for (let step = 1; step <= N; step++) {
+    const pc = ((startPC - step) % 12 + 12) % 12;
+    descLetters.push(step === N ? startLetter : FLATS[pc]);
+  }
+  const ascLetters = [];
+  for (let step = 1; step <= N; step++) {
+    const pc = (startPC + step) % 12;
+    ascLetters.push(step === N ? startLetter : SHARPS[pc]);
+  }
+  return descAsc(descLetters, startOct, fingering, ascLetters);
+}
+
+// ─── FINGERING PRESETS ────────────────────────────────────────────────────
+// Indicative fingerings — verify exact patterns with Trinity Piano Scales
+// & Arpeggios book for exam preparation.
+const F = {
+  rh1:    [1,2,3,1,2,3,4,5],                    // RH white-key 1 oct asc
+  lh1:    [5,4,3,2,1,3,2,1],                    // LH white-key 1 oct asc
+  rh2:    [1,2,3,1,2,3,4,1,2,3,1,2,3,4,5],      // RH white-key 2 oct asc
+  lh2:    [5,4,3,2,1,3,2,1,4,3,2,1,3,2,1],      // LH white-key 2 oct asc
+  fRh1:   [1,2,3,4,1,2,3,4],                    // F major RH 1 oct
+  fRh2:   [1,2,3,4,1,2,3,4,1,2,3,4,1,2,3],      // F major RH 2 oct
+  bbRh2:  [4,1,2,3,1,2,3,4,1,2,3,1,2,3,4],      // B♭ major RH 2 oct
+  bbLh2:  [3,2,1,4,3,2,1,3,2,1,4,3,2,1,3],      // B♭ major LH 2 oct
+  ebRh2:  [3,1,2,3,1,2,3,4,1,2,3,1,2,3,4],      // E♭ major RH 2 oct
+  ebLh2:  [3,2,1,4,3,2,1,3,2,1,4,3,2,1,3],      // E♭ major LH 2 oct
+  abRh2:  [3,1,2,3,1,2,3,4,1,2,3,1,2,3,4],      // A♭ major RH 2 oct
+  abLh2:  [3,2,1,4,3,2,1,3,2,1,4,3,2,1,3],      // A♭ major LH 2 oct
+  dbRh2:  [2,3,1,2,3,4,1,2,3,1,2,3,4,1,2],      // D♭ major RH 2 oct
+  dbLh2:  [3,2,1,4,3,2,1,3,2,1,4,3,2,1,3],      // D♭ major LH 2 oct
+  fsRh2:  [2,3,4,1,2,3,1,2,3,4,1,2,3,1,2],      // F# major RH 2 oct
+  fsLh2:  [4,3,2,1,3,2,1,4,3,2,1,3,2,1,2],      // F# major LH 2 oct
+  chrom1: [1,3,1,2,3,1,3,1,3,1,2,3,1],
+  chrom2: [1,3,1,2,3,1,3,1,3,1,2,3,1,3,1,2,3,1,3,1,3,1,2,3,1],
+  arp2Rh: [1,2,3,1,2,3,5],
+  arp2Lh: [5,3,2,1,3,2,1],
+  broken1:[1,2,3,5,3,2,1],
+  brokenTo5Rh:[1,3,5,3,1],
+  brokenTo5Lh:[5,3,1,3,5],
+};
+
+// Helper to build a descending scale (reverse letters of ascending)
+function revScale(modeKey, octaves, topOct, fingering) {
+  const asc = scaleLetters(SP[modeKey], octaves);
+  const rev = [...asc].reverse();
+  return descSeq(rev, topOct, fingering);
+}
+
+// ─── GRADES DATA (Trinity Piano Syllabus from 2023) ──────────────────────
+
+const GRADES = [
+  // ─── INITIAL ────────────────────────────────────────────────────────────
+  {
+    grade:'Initial',
+    desc:'C major · A minor · broken triads to a 5th · 1 octave · ♩ = 60',
+    sets: {
+      A: {
+        label:'Set A',
+        summary:'<b>Set A:</b> C major LH · A minor RH · Broken triads (both) LH',
+        items:[
+          { name:'C Major', category:'scale', hands:'lh', octaves:1,
+            lh: scl('C', 1, 3, F.lh1) },
+          { name:'A Minor', category:'scale', hands:'rh', octaves:1,
+            variants: [
+              { label:'Harmonic', rh: scl('Am-h', 1, 4, F.rh1) },
+              { label:'Melodic (ascending)', rh: scl('Am-m', 1, 4, F.rh1) },
+              { label:'Natural', rh: scl('Am-n', 1, 4, F.rh1) },
+            ],
+            note:'Candidate choice: harmonic, melodic, or natural minor. Melodic descends as natural minor.' },
+          { name:'Broken Triad in C Major', category:'broken-chord', hands:'lh', octaves:1,
+            lh: brokenTo5('C', 3, F.brokenTo5Lh),
+            note:'Played to a 5th.' },
+          { name:'Broken Triad in A Minor', category:'broken-chord', hands:'lh', octaves:1,
+            lh: brokenTo5('Am', 3, F.brokenTo5Lh),
+            note:'Played to a 5th.' },
+        ]
+      },
+      B: {
+        label:'Set B',
+        summary:'<b>Set B:</b> C major RH · A minor LH · Broken triads (both) RH',
+        items:[
+          { name:'C Major', category:'scale', hands:'rh', octaves:1,
+            rh: scl('C', 1, 4, F.rh1) },
+          { name:'A Minor', category:'scale', hands:'lh', octaves:1,
+            variants: [
+              { label:'Harmonic', lh: scl('Am-h', 1, 3, F.lh1) },
+              { label:'Melodic (ascending)', lh: scl('Am-m', 1, 3, F.lh1) },
+              { label:'Natural', lh: scl('Am-n', 1, 3, F.lh1) },
+            ],
+            note:'Candidate choice: harmonic, melodic, or natural minor.' },
+          { name:'Broken Triad in C Major', category:'broken-chord', hands:'rh', octaves:1,
+            rh: brokenTo5('C', 4, F.brokenTo5Rh),
+            note:'Played to a 5th.' },
+          { name:'Broken Triad in A Minor', category:'broken-chord', hands:'rh', octaves:1,
+            rh: brokenTo5('Am', 4, F.brokenTo5Rh),
+            note:'Played to a 5th.' },
+        ]
+      }
+    }
+  },
+  // ─── GRADE 1 ────────────────────────────────────────────────────────────
+  {
+    grade:'Grade 1',
+    desc:'F/G major · E/D minor · 1 octave · broken chords · chromatic contrary motion · ♩ = 70 · broken chords ♩. = 50',
+    sets: {
+      A: {
+        label:'Set A',
+        summary:'<b>Set A:</b> F major RH · E minor LH · Chromatic contrary on D (HT) · G major broken chord LH · D minor broken chord RH',
+        items:[
+          { name:'F Major', category:'scale', hands:'rh', octaves:1,
+            rh: scl('F', 1, 4, F.fRh1) },
+          { name:'E Minor', category:'scale', hands:'lh', octaves:1,
+            variants: [
+              { label:'Harmonic', lh: scl('Em-h', 1, 3, F.lh1) },
+              { label:'Melodic (ascending)', lh: scl('Em-m', 1, 3, F.lh1) },
+              { label:'Natural', lh: scl('Em-n', 1, 3, F.lh1) },
+            ],
+            note:'Candidate choice: harmonic, melodic, or natural minor.' },
+          { name:'Chromatic Scale — Contrary Motion from D', category:'chromatic', hands:'contrary', octaves:1,
+            rh: chromAsc('D', 1, 4, F.chrom1),
+            lh: chromDesc('D', 1, 4, F.chrom1),
+            note:'Hands together, diverging. RH ascends D4→D5; LH descends D4→D3.' },
+          { name:'G Major Broken Chord', category:'broken-chord', hands:'lh', octaves:1,
+            lh: broken1Oct('G', 2, F.broken1) },
+          { name:'D Minor Broken Chord', category:'broken-chord', hands:'rh', octaves:1,
+            rh: broken1Oct('Dm', 4, F.broken1) },
+        ]
+      },
+      B: {
+        label:'Set B',
+        summary:'<b>Set B:</b> G major LH · D minor RH · C major contrary motion (HT) · F major broken chord RH · E minor broken chord LH',
+        items:[
+          { name:'G Major', category:'scale', hands:'lh', octaves:1,
+            lh: scl('G', 1, 2, F.lh1) },
+          { name:'D Minor', category:'scale', hands:'rh', octaves:1,
+            variants: [
+              { label:'Harmonic', rh: scl('Dm-h', 1, 4, F.rh1) },
+              { label:'Melodic (ascending)', rh: scl('Dm-m', 1, 4, F.rh1) },
+              { label:'Natural', rh: scl('Dm-n', 1, 4, F.rh1) },
+            ],
+            note:'Candidate choice: harmonic, melodic, or natural minor.' },
+          { name:'C Major — Contrary Motion', category:'contrary', hands:'contrary', octaves:1,
+            rh: scl('C', 1, 4, F.rh1),
+            lh: descAsc(['C','B','A','G','F','E','D','C'], 4, [1,2,3,1,2,3,4,5]),
+            note:'Hands together, diverging from middle C.' },
+          { name:'F Major Broken Chord', category:'broken-chord', hands:'rh', octaves:1,
+            rh: broken1Oct('F', 4, F.broken1) },
+          { name:'E Minor Broken Chord', category:'broken-chord', hands:'lh', octaves:1,
+            lh: broken1Oct('Em', 3, F.broken1) },
+        ]
+      }
+    }
+  },
+  // ─── GRADE 2 ────────────────────────────────────────────────────────────
+  {
+    grade:'Grade 2',
+    desc:'B♭/D major · B/G minor · 2 octaves · C major contrary / B♭ chromatic · 2-oct arpeggios · ♩ = 80 · arpeggios ♩ = 60',
+    sets: {
+      A: {
+        label:'Set A',
+        summary:'<b>Set A:</b> B♭ major & B minor HT · C major contrary motion HT · D major arpeggio RH · G minor arpeggio LH',
+        items:[
+          { name:'B♭ Major', category:'scale', hands:'together', octaves:2,
+            rh: scl('Bb', 2, 4, F.bbRh2),
+            lh: scl('Bb', 2, 2, F.bbLh2) },
+          { name:'B Minor', category:'scale', hands:'together', octaves:2,
+            variants: [
+              { label:'Harmonic', rh: scl('Bm-h', 2, 4, F.rh2), lh: scl('Bm-h', 2, 2, F.lh2) },
+              { label:'Melodic (ascending)', rh: scl('Bm-m', 2, 4, F.rh2), lh: scl('Bm-m', 2, 2, F.lh2) },
+            ],
+            note:'Candidate choice: harmonic or melodic minor. Melodic descends as natural minor.' },
+          { name:'C Major — Contrary Motion', category:'contrary', hands:'contrary', octaves:2,
+            rh: scl('C', 2, 4, F.rh2),
+            lh: descAsc(['C','B','A','G','F','E','D','C','B','A','G','F','E','D','C'], 4, [1,2,3,1,2,3,4,1,2,3,1,2,3,4,5]),
+            note:'Hands together, diverging from middle C. Two octaves.' },
+          { name:'D Major Arpeggio', category:'arpeggio', hands:'rh', octaves:2,
+            rh: arp('D', 2, 4, F.arp2Rh) },
+          { name:'G Minor Arpeggio', category:'arpeggio', hands:'lh', octaves:2,
+            lh: arp('Gm', 2, 2, F.arp2Lh) },
+        ]
+      },
+      B: {
+        label:'Set B',
+        summary:'<b>Set B:</b> D major & G minor HT · Chromatic similar motion from B♭ HT · B♭ major arpeggio LH · B minor arpeggio RH',
+        items:[
+          { name:'D Major', category:'scale', hands:'together', octaves:2,
+            rh: scl('D', 2, 4, F.rh2),
+            lh: scl('D', 2, 3, F.lh2) },
+          { name:'G Minor', category:'scale', hands:'together', octaves:2,
+            variants: [
+              { label:'Harmonic', rh: scl('Gm-h', 2, 4, F.rh2), lh: scl('Gm-h', 2, 2, F.lh2) },
+              { label:'Melodic (ascending)', rh: scl('Gm-m', 2, 4, F.rh2), lh: scl('Gm-m', 2, 2, F.lh2) },
+            ],
+            note:'Candidate choice: harmonic or melodic minor. Melodic descends as natural minor.' },
+          { name:'Chromatic Scale — Similar Motion from B♭', category:'chromatic', hands:'together', octaves:2,
+            rh: chromAsc('Bb', 2, 4, F.chrom2),
+            lh: chromAsc('Bb', 2, 2, F.chrom2) },
+          { name:'B♭ Major Arpeggio', category:'arpeggio', hands:'lh', octaves:2,
+            lh: arp('Bb', 2, 2, F.arp2Lh) },
+          { name:'B Minor Arpeggio', category:'arpeggio', hands:'rh', octaves:2,
+            rh: arp('Bm', 2, 3, F.arp2Rh) },
+        ]
+      }
+    }
+  },
+  // ─── GRADE 3 ────────────────────────────────────────────────────────────
+  {
+    grade:'Grade 3',
+    desc:'E♭/A major · C/F♯ minor · 2 octaves · chromatic F♯ / E♭ contrary · A/F♯m/E♭/Cm arpeggios · ♩ = 90 · arpeggios ♩ = 70',
+    sets: {
+      A: {
+        label:'Set A',
+        summary:'<b>Set A:</b> E♭ major & C minor HT · Chromatic similar motion from F♯ HT · A major arpeggio RH · F♯ minor arpeggio LH',
+        items:[
+          { name:'E♭ Major', category:'scale', hands:'together', octaves:2,
+            rh: scl('Eb', 2, 4, F.ebRh2),
+            lh: scl('Eb', 2, 3, F.ebLh2) },
+          { name:'C Minor', category:'scale', hands:'together', octaves:2,
+            variants: [
+              { label:'Harmonic', rh: scl('Cm-h', 2, 4, F.rh2), lh: scl('Cm-h', 2, 3, F.lh2) },
+              { label:'Melodic (ascending)', rh: scl('Cm-m', 2, 4, F.rh2), lh: scl('Cm-m', 2, 3, F.lh2) },
+            ],
+            note:'Candidate choice: harmonic or melodic minor. Melodic descends as natural minor.' },
+          { name:'Chromatic Scale — Similar Motion from F♯', category:'chromatic', hands:'together', octaves:2,
+            rh: chromAsc('F#', 2, 4, F.chrom2),
+            lh: chromAsc('F#', 2, 2, F.chrom2) },
+          { name:'A Major Arpeggio', category:'arpeggio', hands:'rh', octaves:2,
+            rh: arp('A', 2, 4, F.arp2Rh) },
+          { name:'F♯ Minor Arpeggio', category:'arpeggio', hands:'lh', octaves:2,
+            lh: arp('F#m', 2, 2, F.arp2Lh) },
+        ]
+      },
+      B: {
+        label:'Set B',
+        summary:'<b>Set B:</b> A major & F♯ minor HT · E♭ major contrary motion HT · E♭ major arpeggio LH · C minor arpeggio RH',
+        items:[
+          { name:'A Major', category:'scale', hands:'together', octaves:2,
+            rh: scl('A', 2, 4, F.rh2),
+            lh: scl('A', 2, 2, F.lh2) },
+          { name:'F♯ Minor', category:'scale', hands:'together', octaves:2,
+            variants: [
+              { label:'Harmonic', rh: scl('F#m-h', 2, 4, [2,3,4,1,2,3,1,2,3,4,1,2,3,1,2]), lh: scl('F#m-h', 2, 2, [4,3,2,1,3,2,1,4,3,2,1,3,2,1,2]) },
+              { label:'Melodic (ascending)', rh: scl('F#m-m', 2, 4, [2,3,4,1,2,3,1,2,3,4,1,2,3,1,2]), lh: scl('F#m-m', 2, 2, [4,3,2,1,3,2,1,4,3,2,1,3,2,1,2]) },
+            ],
+            note:'Candidate choice: harmonic or melodic minor. Melodic descends as natural minor.' },
+          { name:'E♭ Major — Contrary Motion', category:'contrary', hands:'contrary', octaves:2,
+            rh: scl('Eb', 2, 4, F.ebRh2),
+            lh: descAsc(['Eb','D','C','Bb','Ab','G','F','Eb','D','C','Bb','Ab','G','F','Eb'], 4, [3,1,2,3,1,2,3,4,1,2,3,1,2,3,4]),
+            note:'Hands together, diverging from E♭4. Two octaves.' },
+          { name:'E♭ Major Arpeggio', category:'arpeggio', hands:'lh', octaves:2,
+            lh: arp('Eb', 2, 3, F.arp2Lh) },
+          { name:'C Minor Arpeggio', category:'arpeggio', hands:'rh', octaves:2,
+            rh: arp('Cm', 2, 4, F.arp2Rh) },
+        ]
+      }
+    }
+  },
+  // ─── GRADE 4 ────────────────────────────────────────────────────────────
+  {
+    grade:'Grade 4',
+    desc:'E/A♭ major · F/C♯ minor · 2-oct chromatics (B, A♭ contrary) · 2-oct arpeggios · ♩ = 100 · arpeggios ♩ = 80',
+    sets: {
+      A: {
+        label:'Set A',
+        summary:'<b>Set A:</b> E major & F minor HT · Chromatic from B HT · Chromatic contrary from A♭ HT (1 oct) · A♭ major arpeggio RH · F minor arpeggio LH',
+        items:[
+          { name:'E Major', category:'scale', hands:'together', octaves:2,
+            rh: scl('E', 2, 4, F.rh2),
+            lh: scl('E', 2, 2, F.lh2) },
+          { name:'F Minor', category:'scale', hands:'together', octaves:2,
+            variants: [
+              { label:'Harmonic', rh: scl('Fm-h', 2, 4, F.fRh2), lh: scl('Fm-h', 2, 2, F.lh2) },
+              { label:'Melodic (ascending)', rh: scl('Fm-m', 2, 4, F.fRh2), lh: scl('Fm-m', 2, 2, F.lh2) },
+            ],
+            note:'Candidate choice: harmonic or melodic minor. Melodic descends as natural minor.' },
+          { name:'Chromatic Scale — Similar Motion from B', category:'chromatic', hands:'together', octaves:2,
+            rh: chromAsc('B', 2, 4, F.chrom2),
+            lh: chromAsc('B', 2, 2, F.chrom2) },
+          { name:'Chromatic Scale — Contrary Motion from A♭', category:'chromatic', hands:'contrary', octaves:1,
+            rh: chromAsc('Ab', 1, 4, F.chrom1),
+            lh: chromDesc('Ab', 1, 4, F.chrom1),
+            note:'Hands together, diverging from A♭4. One octave.' },
+          { name:'A♭ Major Arpeggio', category:'arpeggio', hands:'rh', octaves:2,
+            rh: arp('Ab', 2, 4, F.arp2Rh) },
+          { name:'F Minor Arpeggio', category:'arpeggio', hands:'lh', octaves:2,
+            lh: arp('Fm', 2, 2, F.arp2Lh) },
+        ]
+      },
+      B: {
+        label:'Set B',
+        summary:'<b>Set B:</b> A♭ major & C♯ minor HT · E major contrary motion HT · Chromatic similar from B HT · E major arpeggio RH · C♯ minor arpeggio LH',
+        items:[
+          { name:'A♭ Major', category:'scale', hands:'together', octaves:2,
+            rh: scl('Ab', 2, 4, F.abRh2),
+            lh: scl('Ab', 2, 3, F.abLh2) },
+          { name:'C♯ Minor', category:'scale', hands:'together', octaves:2,
+            variants: [
+              { label:'Harmonic', rh: scl('C#m-h', 2, 4, [2,3,1,2,3,4,1,2,3,1,2,3,4,1,2]), lh: scl('C#m-h', 2, 3, [3,2,1,4,3,2,1,3,2,1,4,3,2,1,2]) },
+              { label:'Melodic (ascending)', rh: scl('C#m-m', 2, 4, [2,3,1,2,3,4,1,2,3,1,2,3,4,1,2]), lh: scl('C#m-m', 2, 3, [3,2,1,4,3,2,1,3,2,1,4,3,2,1,2]) },
+            ],
+            note:'Candidate choice: harmonic or melodic minor. Melodic descends as natural minor.' },
+          { name:'E Major — Contrary Motion', category:'contrary', hands:'contrary', octaves:2,
+            rh: scl('E', 2, 4, F.rh2),
+            lh: descAsc(['E','D#','C#','B','A','G#','F#','E','D#','C#','B','A','G#','F#','E'], 4, [1,2,3,1,2,3,4,1,2,3,1,2,3,4,5]),
+            note:'Hands together, diverging from E4. Two octaves.' },
+          { name:'Chromatic Scale — Similar Motion from B', category:'chromatic', hands:'together', octaves:2,
+            rh: chromAsc('B', 2, 4, F.chrom2),
+            lh: chromAsc('B', 2, 2, F.chrom2) },
+          { name:'E Major Arpeggio', category:'arpeggio', hands:'rh', octaves:2,
+            rh: arp('E', 2, 4, F.arp2Rh) },
+          { name:'C♯ Minor Arpeggio', category:'arpeggio', hands:'lh', octaves:2,
+            lh: arp('C#m', 2, 3, F.arp2Lh) },
+        ]
+      }
+    }
+  },
+  // ─── GRADE 5 ────────────────────────────────────────────────────────────
+  {
+    grade:'Grade 5',
+    desc:'D♭/B major · G♯/B♭ minor · G harmonic contrary · chromatic contrary at minor 3rd · dim 7ths · ♩ = 110 · arpeggios ♩ = 90',
+    sets: {
+      A: {
+        label:'Set A',
+        summary:'<b>Set A:</b> D♭ major & G♯ minor HT · G harmonic minor contrary motion HT · Chromatic contrary (LH C / RH E) HT · B major, B♭ minor arpeggios HT · Dim 7th starting on B HT',
+        items:[
+          { name:'D♭ Major', category:'scale', hands:'together', octaves:2,
+            rh: scl('Db', 2, 4, F.dbRh2),
+            lh: scl('Db', 2, 3, F.dbLh2) },
+          { name:'G♯ Minor', category:'scale', hands:'together', octaves:2,
+            variants: [
+              { label:'Harmonic', rh: scl('G#m-h', 2, 4, [3,4,1,2,3,1,2,3,4,1,2,3,1,2,3]), lh: scl('G#m-h', 2, 2, [4,3,2,1,3,2,1,4,3,2,1,3,2,1,2]) },
+              { label:'Melodic (ascending)', rh: scl('G#m-m', 2, 4, [3,4,1,2,3,1,2,3,4,1,2,3,1,2,3]), lh: scl('G#m-m', 2, 2, [4,3,2,1,3,2,1,4,3,2,1,3,2,1,2]) },
+            ],
+            note:'Candidate choice: harmonic or melodic minor. Melodic descends as natural minor.' },
+          { name:'G Harmonic Minor — Contrary Motion', category:'contrary', hands:'contrary', octaves:2,
+            rh: scl('Gm-h', 2, 4, F.rh2),
+            lh: descAsc(['G','F#','Eb','D','C','Bb','A','G','F#','Eb','D','C','Bb','A','G'], 4, [1,2,3,1,2,3,4,1,2,3,1,2,3,4,5]),
+            note:'Hands together, diverging from G4. Two octaves.' },
+          { name:'Chromatic Scale — Contrary Motion, LH on C / RH on E', category:'chromatic', hands:'contrary', octaves:2,
+            rh: chromAsc('E', 2, 4, F.chrom2),
+            lh: chromDesc('C', 2, 4, F.chrom2),
+            note:'Hands start a minor 6th apart and diverge. RH ascends from E4; LH descends from C4.' },
+          { name:'B Major Arpeggio', category:'arpeggio', hands:'together', octaves:2,
+            rh: arp('B', 2, 3, F.arp2Rh),
+            lh: arp('B', 2, 2, F.arp2Lh) },
+          { name:'B♭ Minor Arpeggio', category:'arpeggio', hands:'together', octaves:2,
+            rh: arp('Bbm', 2, 3, F.arp2Rh),
+            lh: arp('Bbm', 2, 2, F.arp2Lh) },
+          { name:'Diminished 7th starting on B', category:'dim7', hands:'together', octaves:2,
+            rh: dim7('B', 2, 3, [1,2,3,4,1,2,3,4,5]),
+            lh: dim7('B', 2, 2, [5,4,3,2,1,4,3,2,1]) },
+        ]
+      },
+      B: {
+        label:'Set B',
+        summary:'<b>Set B:</b> B major & B♭ minor HT · Chromatic similar from D♭ HT · Chromatic contrary (LH C / RH E) HT · D♭ major, G♯ minor arpeggios HT · Dim 7th starting on B HT',
+        items:[
+          { name:'B Major', category:'scale', hands:'together', octaves:2,
+            rh: scl('B', 2, 4, F.rh2),
+            lh: scl('B', 2, 2, F.lh2) },
+          { name:'B♭ Minor', category:'scale', hands:'together', octaves:2,
+            variants: [
+              { label:'Harmonic', rh: scl('Bbm-h', 2, 4, F.bbRh2), lh: scl('Bbm-h', 2, 2, F.bbLh2) },
+              { label:'Melodic (ascending)', rh: scl('Bbm-m', 2, 4, F.bbRh2), lh: scl('Bbm-m', 2, 2, F.bbLh2) },
+            ],
+            note:'Candidate choice: harmonic or melodic minor. Melodic descends as natural minor.' },
+          { name:'Chromatic Scale — Similar Motion from D♭', category:'chromatic', hands:'together', octaves:2,
+            rh: chromAsc('Db', 2, 4, F.chrom2),
+            lh: chromAsc('Db', 2, 2, F.chrom2) },
+          { name:'Chromatic Scale — Contrary Motion, LH on C / RH on E', category:'chromatic', hands:'contrary', octaves:2,
+            rh: chromAsc('E', 2, 4, F.chrom2),
+            lh: chromDesc('C', 2, 4, F.chrom2),
+            note:'Hands start a minor 6th apart and diverge.' },
+          { name:'D♭ Major Arpeggio', category:'arpeggio', hands:'together', octaves:2,
+            rh: arp('Db', 2, 4, F.arp2Rh),
+            lh: arp('Db', 2, 3, F.arp2Lh) },
+          { name:'G♯ Minor Arpeggio', category:'arpeggio', hands:'together', octaves:2,
+            rh: arp('G#m', 2, 3, F.arp2Rh),
+            lh: arp('G#m', 2, 2, F.arp2Lh) },
+          { name:'Diminished 7th starting on B', category:'dim7', hands:'together', octaves:2,
+            rh: dim7('B', 2, 3, [1,2,3,4,1,2,3,4,5]),
+            lh: dim7('B', 2, 2, [5,4,3,2,1,4,3,2,1]) },
+        ]
+      }
+    }
+  },
+  // ─── GRADE 6 ────────────────────────────────────────────────────────────
+  {
+    grade:'Grade 6',
+    desc:'B♭/D major · B♭ harmonic / D or B♭ melodic minor · chromatics · C major scale in 3rds · dim/dom 7ths · 4 octaves · ♩ = 120 · 3rds ♩ = 60 · arpeggios ♩ = 100',
+    sets: {
+      A: {
+        label:'Set A',
+        summary:'<b>Set A:</b> B♭ major · B♭ harmonic minor · D melodic minor · Chromatic similar on D · Chromatic contrary on E♭ (2 oct) · C major in 3rds RH · D major, B♭ minor arpeggios · Dim 7th on D · Dom 7th in B♭. All HT, 4 octaves unless noted.',
+        items:[
+          { name:'B♭ Major', category:'scale', hands:'together', octaves:4,
+            rh: scl('Bb', 2, 4, F.bbRh2),
+            lh: scl('Bb', 2, 2, F.bbLh2),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'B♭ Harmonic Minor', category:'scale', hands:'together', octaves:4,
+            rh: scl('Bbm-h', 2, 4, F.bbRh2),
+            lh: scl('Bbm-h', 2, 2, F.bbLh2),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'D Melodic Minor', category:'scale', hands:'together', octaves:4,
+            rh: scl('Dm-m', 2, 4, F.rh2),
+            lh: scl('Dm-m', 2, 3, F.lh2),
+            note:'Ascending shown (raised 6 & 7). Descend as natural minor. 4 octaves required.' },
+          { name:'Chromatic Scale — Similar Motion from D', category:'chromatic', hands:'together', octaves:4,
+            rh: chromAsc('D', 2, 4, F.chrom2),
+            lh: chromAsc('D', 2, 3, F.chrom2),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'Chromatic Scale — Contrary Motion from E♭', category:'chromatic', hands:'contrary', octaves:2,
+            rh: chromAsc('Eb', 2, 4, F.chrom2),
+            lh: chromDesc('Eb', 2, 4, F.chrom2),
+            note:'Hands diverge from E♭4. Two octaves.' },
+          { name:'C Major Scale in 3rds', category:'thirds', hands:'rh', octaves:1,
+            rh: pairVoices(
+              scl('C', 1, 4, [1,2,3,1,2,3,4,5]),
+              seq(['E','F','G','A','B','C','D','E'], 4, [3,1,2,3,1,2,3,4])
+            ),
+            note:'RH only. Lower voice starts on tonic; upper voice a 3rd above. One octave.' },
+          { name:'D Major Arpeggio', category:'arpeggio', hands:'together', octaves:4,
+            rh: arp('D', 2, 4, F.arp2Rh),
+            lh: arp('D', 2, 3, F.arp2Lh),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'B♭ Minor Arpeggio', category:'arpeggio', hands:'together', octaves:4,
+            rh: arp('Bbm', 2, 3, F.arp2Rh),
+            lh: arp('Bbm', 2, 2, F.arp2Lh),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'Diminished 7th starting on D', category:'dim7', hands:'together', octaves:4,
+            rh: dim7('D', 2, 4, [1,2,3,4,1,2,3,4,5]),
+            lh: dim7('D', 2, 3, [5,4,3,2,1,4,3,2,1]),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'Dominant 7th in the key of B♭', category:'dom7', hands:'together', octaves:4,
+            rh: dom7('Bb', 2, 4, [1,2,3,4,1,2,3,4,5]),
+            lh: dom7('Bb', 2, 3, [5,4,3,2,1,4,3,2,1]),
+            note:'V7 of B♭ = F7 (F–A–C–E♭). 4 octaves required — pattern shown over 2.' },
+        ]
+      },
+      B: {
+        label:'Set B',
+        summary:'<b>Set B:</b> D major · B♭ harmonic minor · B♭ melodic minor · Chromatic similar on D · Chromatic contrary on E♭ (2 oct) · C major in 3rds LH · B♭ major, D minor arpeggios · Dim 7th on B♭ · Dom 7th in D. All HT, 4 octaves unless noted.',
+        items:[
+          { name:'D Major', category:'scale', hands:'together', octaves:4,
+            rh: scl('D', 2, 4, F.rh2),
+            lh: scl('D', 2, 3, F.lh2),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'B♭ Harmonic Minor', category:'scale', hands:'together', octaves:4,
+            rh: scl('Bbm-h', 2, 4, F.bbRh2),
+            lh: scl('Bbm-h', 2, 2, F.bbLh2),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'B♭ Melodic Minor', category:'scale', hands:'together', octaves:4,
+            rh: scl('Bbm-m', 2, 4, F.bbRh2),
+            lh: scl('Bbm-m', 2, 2, F.bbLh2),
+            note:'Ascending shown (raised 6 & 7). Descend as natural minor. 4 octaves required.' },
+          { name:'Chromatic Scale — Similar Motion from D', category:'chromatic', hands:'together', octaves:4,
+            rh: chromAsc('D', 2, 4, F.chrom2),
+            lh: chromAsc('D', 2, 3, F.chrom2),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'Chromatic Scale — Contrary Motion from E♭', category:'chromatic', hands:'contrary', octaves:2,
+            rh: chromAsc('Eb', 2, 4, F.chrom2),
+            lh: chromDesc('Eb', 2, 4, F.chrom2),
+            note:'Hands diverge from E♭4. Two octaves.' },
+          { name:'C Major Scale in 3rds', category:'thirds', hands:'lh', octaves:1,
+            lh: pairVoices(
+              scl('C', 1, 3, [5,4,3,2,1,3,2,1]),
+              seq(['E','F','G','A','B','C','D','E'], 3, [3,2,1,3,2,1,3,2])
+            ),
+            note:'LH only. Lower voice starts on tonic; upper voice a 3rd above. One octave.' },
+          { name:'B♭ Major Arpeggio', category:'arpeggio', hands:'together', octaves:4,
+            rh: arp('Bb', 2, 3, F.arp2Rh),
+            lh: arp('Bb', 2, 2, F.arp2Lh),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'D Minor Arpeggio', category:'arpeggio', hands:'together', octaves:4,
+            rh: arp('Dm', 2, 4, F.arp2Rh),
+            lh: arp('Dm', 2, 3, F.arp2Lh),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'Diminished 7th starting on B♭', category:'dim7', hands:'together', octaves:4,
+            rh: dim7('Bb', 2, 4, [1,2,3,4,1,2,3,4,5]),
+            lh: dim7('Bb', 2, 3, [5,4,3,2,1,4,3,2,1]),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'Dominant 7th in the key of D', category:'dom7', hands:'together', octaves:4,
+            rh: dom7('D', 2, 4, [1,2,3,4,1,2,3,4,5]),
+            lh: dom7('D', 2, 3, [5,4,3,2,1,4,3,2,1]),
+            note:'V7 of D = A7 (A–C♯–E–G). 4 octaves required — pattern shown over 2.' },
+        ]
+      }
+    }
+  },
+  // ─── GRADE 7 ────────────────────────────────────────────────────────────
+  {
+    grade:'Grade 7',
+    desc:'E/A♭ major · E/G♯ harmonic & melodic minors · chromatic at minor 3rd · E major scale in 3rds · dim/dom 7ths · E contrary · 4 octaves · ♩ = 130 · 3rds ♩ = 70 · arpeggios ♩ = 110',
+    sets: {
+      A: {
+        label:'Set A',
+        summary:'<b>Set A:</b> E major · E harmonic minor · G♯ melodic minor · Chromatic similar at minor 3rd (LH C / RH E♭) · E major in 3rds LH · A♭ major, E minor arpeggios · Dim 7th on A♭ · Dom 7th in E · E major contrary (2 oct). All HT, 4 octaves unless noted.',
+        items:[
+          { name:'E Major', category:'scale', hands:'together', octaves:4,
+            rh: scl('E', 2, 4, F.rh2),
+            lh: scl('E', 2, 2, F.lh2),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'E Harmonic Minor', category:'scale', hands:'together', octaves:4,
+            rh: scl('Em-h', 2, 4, F.rh2),
+            lh: scl('Em-h', 2, 2, F.lh2),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'G♯ Melodic Minor', category:'scale', hands:'together', octaves:4,
+            rh: scl('G#m-m', 2, 4, [3,4,1,2,3,1,2,3,4,1,2,3,1,2,3]),
+            lh: scl('G#m-m', 2, 2, [4,3,2,1,3,2,1,4,3,2,1,3,2,1,2]),
+            note:'Ascending shown (raised 6 & 7). Descend as natural minor. 4 octaves required.' },
+          { name:'Chromatic Scale — Similar Motion at a Minor 3rd (LH on C / RH on E♭)', category:'chromatic', hands:'together', octaves:4,
+            rh: chromAsc('Eb', 2, 4, F.chrom2),
+            lh: chromAsc('C', 2, 3, F.chrom2),
+            note:'Hands play in parallel a minor 3rd apart. 4 octaves required.' },
+          { name:'E Major Scale in 3rds', category:'thirds', hands:'lh', octaves:2,
+            lh: pairVoices(
+              scl('E', 2, 3, [5,4,3,2,1,3,2,1,4,3,2,1,3,2,1]),
+              seq(scaleLetters(['G#','A','B','C#','D#','E','F#'], 2), 3, [3,2,1,3,2,1,3,2,1,3,2,1,3,2,1])
+            ),
+            note:'LH only. Lower voice on tonic, upper a 3rd above. Two octaves.' },
+          { name:'A♭ Major Arpeggio', category:'arpeggio', hands:'together', octaves:4,
+            rh: arp('Ab', 2, 4, F.arp2Rh),
+            lh: arp('Ab', 2, 3, F.arp2Lh),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'E Minor Arpeggio', category:'arpeggio', hands:'together', octaves:4,
+            rh: arp('Em', 2, 4, F.arp2Rh),
+            lh: arp('Em', 2, 2, F.arp2Lh),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'Diminished 7th starting on A♭', category:'dim7', hands:'together', octaves:4,
+            rh: dim7('Ab', 2, 4, [1,2,3,4,1,2,3,4,5]),
+            lh: dim7('Ab', 2, 3, [5,4,3,2,1,4,3,2,1]),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'Dominant 7th in the key of E', category:'dom7', hands:'together', octaves:4,
+            rh: dom7('E', 2, 4, [1,2,3,4,1,2,3,4,5]),
+            lh: dom7('E', 2, 3, [5,4,3,2,1,4,3,2,1]),
+            note:'V7 of E = B7 (B–D♯–F♯–A). 4 octaves required — pattern shown over 2.' },
+          { name:'E Major — Contrary Motion', category:'contrary', hands:'contrary', octaves:2,
+            rh: scl('E', 2, 4, F.rh2),
+            lh: descAsc(['E','D#','C#','B','A','G#','F#','E','D#','C#','B','A','G#','F#','E'], 4, [1,2,3,1,2,3,4,1,2,3,1,2,3,4,5]),
+            note:'Hands together, diverging from E4. Two octaves.' },
+        ]
+      },
+      B: {
+        label:'Set B',
+        summary:'<b>Set B:</b> A♭ major · G♯ harmonic minor · E melodic minor · Chromatic similar at minor 3rd (LH C / RH E♭) · E major in 3rds RH · E major, G♯ minor arpeggios · Dim 7th on E · Dom 7th in A♭ · E major contrary (2 oct). All HT, 4 octaves unless noted.',
+        items:[
+          { name:'A♭ Major', category:'scale', hands:'together', octaves:4,
+            rh: scl('Ab', 2, 4, F.abRh2),
+            lh: scl('Ab', 2, 3, F.abLh2),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'G♯ Harmonic Minor', category:'scale', hands:'together', octaves:4,
+            rh: scl('G#m-h', 2, 4, [3,4,1,2,3,1,2,3,4,1,2,3,1,2,3]),
+            lh: scl('G#m-h', 2, 2, [4,3,2,1,3,2,1,4,3,2,1,3,2,1,2]),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'E Melodic Minor', category:'scale', hands:'together', octaves:4,
+            rh: scl('Em-m', 2, 4, F.rh2),
+            lh: scl('Em-m', 2, 2, F.lh2),
+            note:'Ascending shown (raised 6 & 7). Descend as natural minor. 4 octaves required.' },
+          { name:'Chromatic Scale — Similar Motion at a Minor 3rd (LH on C / RH on E♭)', category:'chromatic', hands:'together', octaves:4,
+            rh: chromAsc('Eb', 2, 4, F.chrom2),
+            lh: chromAsc('C', 2, 3, F.chrom2),
+            note:'Hands play in parallel a minor 3rd apart. 4 octaves required.' },
+          { name:'E Major Scale in 3rds', category:'thirds', hands:'rh', octaves:2,
+            rh: pairVoices(
+              scl('E', 2, 4, [1,2,3,1,2,3,4,1,2,3,1,2,3,4,5]),
+              seq(scaleLetters(['G#','A','B','C#','D#','E','F#'], 2), 4, [3,1,2,3,1,2,3,3,1,2,3,1,2,3,1])
+            ),
+            note:'RH only. Lower voice on tonic, upper a 3rd above. Two octaves.' },
+          { name:'E Major Arpeggio', category:'arpeggio', hands:'together', octaves:4,
+            rh: arp('E', 2, 4, F.arp2Rh),
+            lh: arp('E', 2, 2, F.arp2Lh),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'G♯ Minor Arpeggio', category:'arpeggio', hands:'together', octaves:4,
+            rh: arp('G#m', 2, 3, F.arp2Rh),
+            lh: arp('G#m', 2, 2, F.arp2Lh),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'Diminished 7th starting on E', category:'dim7', hands:'together', octaves:4,
+            rh: dim7('E', 2, 4, [1,2,3,4,1,2,3,4,5]),
+            lh: dim7('E', 2, 3, [5,4,3,2,1,4,3,2,1]),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'Dominant 7th in the key of A♭', category:'dom7', hands:'together', octaves:4,
+            rh: dom7('Ab', 2, 4, [1,2,3,4,1,2,3,4,5]),
+            lh: dom7('Ab', 2, 3, [5,4,3,2,1,4,3,2,1]),
+            note:'V7 of A♭ = E♭7 (E♭–G–B♭–D♭). 4 octaves required — pattern shown over 2.' },
+          { name:'E Major — Contrary Motion', category:'contrary', hands:'contrary', octaves:2,
+            rh: scl('E', 2, 4, F.rh2),
+            lh: descAsc(['E','D#','C#','B','A','G#','F#','E','D#','C#','B','A','G#','F#','E'], 4, [1,2,3,1,2,3,4,1,2,3,1,2,3,4,5]),
+            note:'Hands together, diverging from E4. Two octaves.' },
+        ]
+      }
+    }
+  },
+  // ─── GRADE 8 ────────────────────────────────────────────────────────────
+  {
+    grade:'Grade 8',
+    desc:'F♯/E♭ major · B/F♯ harmonic · E♭/B melodic · B major / C harmonic minor in 3rds · dim/dom 7ths · E♭ or F♯ minor contrary · 4 octaves · ♩ = 140 · 3rds ♩ = 80 · arpeggios ♩ = 120',
+    sets: {
+      A: {
+        label:'Set A',
+        summary:'<b>Set A:</b> F♯ major · B harmonic minor · E♭ melodic minor · Chromatic similar from F♯ · B major in 3rds RH · C harmonic minor in 3rds LH · B major, E♭ minor arpeggios · Dim 7th on F♯ · Dom 7th in B · E♭ major contrary (2 oct). All HT, 4 octaves unless noted.',
+        items:[
+          { name:'F♯ Major', category:'scale', hands:'together', octaves:4,
+            rh: scl('F#', 2, 4, F.fsRh2),
+            lh: scl('F#', 2, 2, F.fsLh2),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'B Harmonic Minor', category:'scale', hands:'together', octaves:4,
+            rh: scl('Bm-h', 2, 4, F.rh2),
+            lh: scl('Bm-h', 2, 2, F.lh2),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'E♭ Melodic Minor', category:'scale', hands:'together', octaves:4,
+            rh: scl('Ebm-m', 2, 4, F.ebRh2),
+            lh: scl('Ebm-m', 2, 2, F.ebLh2),
+            note:'Ascending shown. Descend as natural minor. 4 octaves required.' },
+          { name:'Chromatic Scale — Similar Motion from F♯', category:'chromatic', hands:'together', octaves:4,
+            rh: chromAsc('F#', 2, 4, F.chrom2),
+            lh: chromAsc('F#', 2, 2, F.chrom2),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'B Major Scale in 3rds', category:'thirds', hands:'rh', octaves:2,
+            rh: pairVoices(
+              scl('B', 2, 4, [1,2,3,1,2,3,4,1,2,3,1,2,3,4,5]),
+              seq(scaleLetters(['D#','E','F#','G#','A#','B','C#'], 2), 4, [3,1,2,3,1,2,3,3,1,2,3,1,2,3,1])
+            ),
+            note:'RH only. Two octaves.' },
+          { name:'C Harmonic Minor Scale in 3rds', category:'thirds', hands:'lh', octaves:2,
+            lh: pairVoices(
+              scl('Cm-h', 2, 3, [5,4,3,2,1,3,2,1,4,3,2,1,3,2,1]),
+              seq(scaleLetters(['Eb','F','G','Ab','B','C','D'], 2), 3, [3,2,1,3,2,1,3,2,1,3,2,1,3,2,1])
+            ),
+            note:'LH only. Two octaves.' },
+          { name:'B Major Arpeggio', category:'arpeggio', hands:'together', octaves:4,
+            rh: arp('B', 2, 3, F.arp2Rh),
+            lh: arp('B', 2, 2, F.arp2Lh),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'E♭ Minor Arpeggio', category:'arpeggio', hands:'together', octaves:4,
+            rh: arp('Ebm', 2, 4, F.arp2Rh),
+            lh: arp('Ebm', 2, 3, F.arp2Lh),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'Diminished 7th starting on F♯', category:'dim7', hands:'together', octaves:4,
+            rh: dim7('F#', 2, 4, [1,2,3,4,1,2,3,4,5]),
+            lh: dim7('F#', 2, 3, [5,4,3,2,1,4,3,2,1]),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'Dominant 7th in the key of B', category:'dom7', hands:'together', octaves:4,
+            rh: dom7('B', 2, 4, [1,2,3,4,1,2,3,4,5]),
+            lh: dom7('B', 2, 3, [5,4,3,2,1,4,3,2,1]),
+            note:'V7 of B = F♯7 (F♯–A♯–C♯–E). 4 octaves required — pattern shown over 2.' },
+          { name:'E♭ Major — Contrary Motion', category:'contrary', hands:'contrary', octaves:2,
+            rh: scl('Eb', 2, 4, F.ebRh2),
+            lh: descAsc(['Eb','D','C','Bb','Ab','G','F','Eb','D','C','Bb','Ab','G','F','Eb'], 4, [3,1,2,3,1,2,3,4,1,2,3,1,2,3,4]),
+            note:'Hands together, diverging from E♭4. Two octaves.' },
+        ]
+      },
+      B: {
+        label:'Set B',
+        summary:'<b>Set B:</b> E♭ major · F♯ harmonic minor · B melodic minor · Chromatic similar from E♭ · B major in 3rds RH · C harmonic minor in 3rds LH · F♯ major, B minor arpeggios · Dim 7th on E♭ · Dom 7th in F♯ · F♯ minor contrary (2 oct). All HT, 4 octaves unless noted.',
+        items:[
+          { name:'E♭ Major', category:'scale', hands:'together', octaves:4,
+            rh: scl('Eb', 2, 4, F.ebRh2),
+            lh: scl('Eb', 2, 3, F.ebLh2),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'F♯ Harmonic Minor', category:'scale', hands:'together', octaves:4,
+            rh: scl('F#m-h', 2, 4, [2,3,4,1,2,3,1,2,3,4,1,2,3,1,2]),
+            lh: scl('F#m-h', 2, 2, [4,3,2,1,3,2,1,4,3,2,1,3,2,1,2]),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'B Melodic Minor', category:'scale', hands:'together', octaves:4,
+            rh: scl('Bm-m', 2, 4, F.rh2),
+            lh: scl('Bm-m', 2, 2, F.lh2),
+            note:'Ascending shown. Descend as natural minor. 4 octaves required.' },
+          { name:'Chromatic Scale — Similar Motion from E♭', category:'chromatic', hands:'together', octaves:4,
+            rh: chromAsc('Eb', 2, 4, F.chrom2),
+            lh: chromAsc('Eb', 2, 3, F.chrom2),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'B Major Scale in 3rds', category:'thirds', hands:'rh', octaves:2,
+            rh: pairVoices(
+              scl('B', 2, 4, [1,2,3,1,2,3,4,1,2,3,1,2,3,4,5]),
+              seq(scaleLetters(['D#','E','F#','G#','A#','B','C#'], 2), 4, [3,1,2,3,1,2,3,3,1,2,3,1,2,3,1])
+            ),
+            note:'RH only. Two octaves.' },
+          { name:'C Harmonic Minor Scale in 3rds', category:'thirds', hands:'lh', octaves:2,
+            lh: pairVoices(
+              scl('Cm-h', 2, 3, [5,4,3,2,1,3,2,1,4,3,2,1,3,2,1]),
+              seq(scaleLetters(['Eb','F','G','Ab','B','C','D'], 2), 3, [3,2,1,3,2,1,3,2,1,3,2,1,3,2,1])
+            ),
+            note:'LH only. Two octaves.' },
+          { name:'F♯ Major Arpeggio', category:'arpeggio', hands:'together', octaves:4,
+            rh: arp('F#', 2, 4, F.arp2Rh),
+            lh: arp('F#', 2, 3, F.arp2Lh),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'B Minor Arpeggio', category:'arpeggio', hands:'together', octaves:4,
+            rh: arp('Bm', 2, 3, F.arp2Rh),
+            lh: arp('Bm', 2, 2, F.arp2Lh),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'Diminished 7th starting on E♭', category:'dim7', hands:'together', octaves:4,
+            rh: dim7('Eb', 2, 4, [1,2,3,4,1,2,3,4,5]),
+            lh: dim7('Eb', 2, 3, [5,4,3,2,1,4,3,2,1]),
+            note:'4 octaves required — pattern shown over 2.' },
+          { name:'Dominant 7th in the key of F♯', category:'dom7', hands:'together', octaves:4,
+            rh: dom7('F#', 2, 4, [1,2,3,4,1,2,3,4,5]),
+            lh: dom7('F#', 2, 3, [5,4,3,2,1,4,3,2,1]),
+            note:'V7 of F♯ = C♯7 (C♯–E♯–G♯–B). 4 octaves required — pattern shown over 2.' },
+          { name:'F♯ Minor — Contrary Motion', category:'contrary', hands:'contrary', octaves:2,
+            rh: scl('F#m-n', 2, 4, [2,3,4,1,2,3,1,2,3,4,1,2,3,1,2]),
+            lh: descAsc(['F#','E','D','C#','B','A','G#','F#','E','D','C#','B','A','G#','F#'], 4, [2,1,2,3,1,2,3,4,1,2,3,1,2,3,4]),
+            note:'Hands together, diverging from F♯4. Two octaves.' },
+        ]
+      }
+    }
+  },
+];
+
+// ─── SVG GRAND STAFF RENDERER ─────────────────────────────────────────────
+// Staff geometry constants
+const SLS = 10;           // staff line spacing (px) — one step = SLS/2 = 5px
+const HALF = SLS / 2;     // 5px per diatonic step
+const NOTE_R = 4.5;
+const COL_W = 38;
+const LEFT_MARGIN = 56;
+
+// Absolute Y positions of each staff's bottom line within the SVG.
+// 120px of headroom above the treble staff accommodates notes up to ~C7
+// (scales reaching G6–C7 at Grades 5–8) with stems and finger labels.
+const TREBLE_BOTTOM_Y = 120;  // E4 bottom line of treble staff
+const TREBLE_TOP_Y    = TREBLE_BOTTOM_Y - 4 * SLS; // F5 top line
+const BASS_TOP_Y      = TREBLE_BOTTOM_Y + 30;       // A3 top line of bass staff
+const BASS_BOTTOM_Y   = BASS_TOP_Y + 4 * SLS;       // G2 bottom line
+const SVG_H           = BASS_BOTTOM_Y + 28;         // bottom padding for note names
+
+// ── Treble clef note → Y ──────────────────────────────────────────────────
+// Reference: E4 = bottom line = TREBLE_BOTTOM_Y
+// Each diatonic step UP = -HALF px (notes go upward = smaller y)
+// Steps from E4: E4=0, F4=1, G4=2, A4=3, B4=4, C5=5, D5=6, E5=7, F5=8...
+const TREBLE_STEPS = {
+  'E4':0,'F4':1,'G4':2,'A4':3,'B4':4,
+  'C5':5,'D5':6,'E5':7,'F5':8,'G5':9,'A5':10,'B5':11,'C6':12,'D6':13,'E6':14,'F6':15,
+  'G6':16,'A6':17,'B6':18,'C7':19,'D7':20,'E7':21
+};
+// Middle C and D4 sit below treble staff (ledger lines)
+TREBLE_STEPS['C4'] = -2; // ledger line below treble
+TREBLE_STEPS['D4'] = -1; // space below treble (above middle C ledger)
+
+function trebleNoteY(letter, octave) {
+  const key = letter + octave;
+  const step = TREBLE_STEPS[key];
+  if (step === undefined) return null;
+  return TREBLE_BOTTOM_Y - step * HALF;
+}
+
+// ── Bass clef note → Y ───────────────────────────────────────────────────
+// Reference: G2 = bottom line = BASS_BOTTOM_Y
+// Steps from G2: G2=0, A2=1, B2=2, C3=3, D3=4, E3=5, F3=6, G3=7, A3=8, B3=9
+// C4 (middle C) is first ledger line above bass staff = step 10
+const BASS_STEPS = {
+  'G2':0,'A2':1,'B2':2,
+  'C3':3,'D3':4,'E3':5,'F3':6,'G3':7,'A3':8,'B3':9,
+  'C4':10,'D4':11,'E4':12,'F4':13,'G4':14,'A4':15,'B4':16,
+  'C5':17,'D5':18,'E5':19,'F5':20,'G5':21,'A5':22,'B5':23,'C6':24,
+  // Below bass staff
+  'E2':-2,'F2':-1,
+};
+
+function bassNoteY(letter, octave) {
+  const key = letter + octave;
+  const step = BASS_STEPS[key];
+  if (step === undefined) return null;
+  return BASS_BOTTOM_Y - step * HALF;
+}
+
+// ── Ledger lines ──────────────────────────────────────────────────────────
+// Returns array of Y positions where ledger lines are needed, for a note at noteY in given clef
+function trebleLedgerYs(letter, octave) {
+  const key = letter + octave;
+  const step = TREBLE_STEPS[key];
+  if (step === undefined) return [];
+  const ys = [];
+  if (step === -2) { // C4 — one ledger below treble
+    ys.push(TREBLE_BOTTOM_Y + SLS); // ledger at C4 position
+  } else if (step === -1) { // D4 — note in space, ledger line at C4 still needed
+    ys.push(TREBLE_BOTTOM_Y + SLS);
+  } else if (step > 8) { // above F5 top line
+    for (let s = 10; s <= step; s += 2) {
+      ys.push(TREBLE_BOTTOM_Y - s * HALF);
+    }
+  }
+  return ys;
+}
+
+function bassLedgerYs(letter, octave) {
+  const key = letter + octave;
+  const step = BASS_STEPS[key];
+  if (step === undefined) return [];
+  const ys = [];
+  if (step < 0) { // below bass staff
+    for (let s = -2; s >= step; s -= 2) {
+      ys.push(BASS_BOTTOM_Y - s * HALF);
+    }
+  } else if (step >= 10) { // above bass staff (middle C area)
+    for (let s = 10; s <= step; s += 2) {
+      ys.push(BASS_BOTTOM_Y - s * HALF);
+    }
+  }
+  return ys;
+}
+
+function noteColor(acc) {
+  if (acc === '♯' || acc === '𝄪') return '#f0c060';
+  if (acc === '♭') return '#88b8f0';
+  return '#d8d6d0';
+}
+
+function buildStaffSVG(notes, clef, fingerColor) {
+  if (!notes || notes.length === 0) return '';
+
+  const svgW = LEFT_MARGIN + notes.length * COL_W + 20;
+
+  let svg = `<svg width="${svgW}" height="${SVG_H}" viewBox="0 0 ${svgW} ${SVG_H}" xmlns="http://www.w3.org/2000/svg" style="display:block;min-width:${svgW}px">`;
+
+  // ── Draw treble staff lines ─────────────────────────────────────────────
+  for (let i = 0; i < 5; i++) {
+    const y = TREBLE_BOTTOM_Y - i * SLS;
+    svg += `<line x1="8" x2="${svgW-8}" y1="${y}" y2="${y}" stroke="var(--staff-line)" stroke-width="1"/>`;
+  }
+  // ── Draw bass staff lines ───────────────────────────────────────────────
+  for (let i = 0; i < 5; i++) {
+    const y = BASS_BOTTOM_Y - i * SLS;
+    svg += `<line x1="8" x2="${svgW-8}" y1="${y}" y2="${y}" stroke="var(--staff-line)" stroke-width="1"/>`;
+  }
+  // ── Vertical bar connecting staves ────────────────────────────────────
+  svg += `<line x1="8" x2="8" y1="${TREBLE_TOP_Y}" y2="${BASS_BOTTOM_Y}" stroke="var(--staff-line)" stroke-width="2"/>`;
+
+  // ── Treble clef symbol ────────────────────────────────────────────────
+  // The 𝄞 glyph's G-curl sits ~38% above its baseline (matching bass clef
+  // proportions). Anchor the baseline below G4 (y=60) so the curl lands on G4.
+  svg += `<text x="14" y="${TREBLE_BOTTOM_Y - 6}" font-size="38" fill="var(--accent)" font-family="serif" opacity="0.85">𝄞</text>`;
+  // ── Bass clef symbol ──────────────────────────────────────────────────
+  svg += `<text x="14" y="${BASS_TOP_Y + 20}" font-size="26" fill="var(--accent)" font-family="serif" opacity="0.85">𝄢</text>`;
+
+  // ── Draw each note ────────────────────────────────────────────────────
+  notes.forEach((note, i) => {
+    const x = LEFT_MARGIN + i * COL_W + COL_W / 2;
+    const letter = note.l; // plain letter e.g. "C"
+    const octave = note.o;
+    const acc = note.a;
+    const finger = note.f;
+
+    // Get Y position
+    let noteY = null;
+    let ledgerYs = [];
+    let isTreble = true;
+
+    if (clef === 'treble') {
+      noteY = trebleNoteY(letter, octave);
+      ledgerYs = trebleLedgerYs(letter, octave);
+    } else {
+      noteY = bassNoteY(letter, octave);
+      ledgerYs = bassLedgerYs(letter, octave);
+      isTreble = false;
+    }
+
+    if (noteY === null) return;
+
+    const col = noteColor(acc);
+    const isThumb = finger === 1;
+    const fingerLabel = String(finger);
+    const fCol = isThumb ? 'var(--accent)' : fingerColor;
+
+    // ── Ledger lines ────────────────────────────────────────────────────
+    ledgerYs.forEach(ly => {
+      svg += `<line x1="${x - NOTE_R - 4}" x2="${x + NOTE_R + 4}" y1="${ly}" y2="${ly}" stroke="var(--staff-line)" stroke-width="1.2"/>`;
+    });
+
+    // ── Notehead ────────────────────────────────────────────────────────
+    svg += `<ellipse cx="${x}" cy="${noteY}" rx="${NOTE_R}" ry="${NOTE_R * 0.72}" fill="${col}" opacity="0.92"/>`;
+
+    // ── Accidental (left of notehead) ───────────────────────────────────
+    if (acc) {
+      svg += `<text x="${x - NOTE_R - 2}" y="${noteY + 3.5}" text-anchor="end" font-size="10" fill="${col}" font-family="serif" font-weight="bold">${acc}</text>`;
+    }
+
+    // ── Second voice (for scales in 3rds) ───────────────────────────────
+    let noteY2 = null;
+    if (note.l2) {
+      if (clef === 'treble') {
+        noteY2 = trebleNoteY(note.l2, note.o2);
+        trebleLedgerYs(note.l2, note.o2).forEach(ly => {
+          svg += `<line x1="${x - NOTE_R - 4}" x2="${x + NOTE_R + 4}" y1="${ly}" y2="${ly}" stroke="var(--staff-line)" stroke-width="1.2"/>`;
+        });
+      } else {
+        noteY2 = bassNoteY(note.l2, note.o2);
+        bassLedgerYs(note.l2, note.o2).forEach(ly => {
+          svg += `<line x1="${x - NOTE_R - 4}" x2="${x + NOTE_R + 4}" y1="${ly}" y2="${ly}" stroke="var(--staff-line)" stroke-width="1.2"/>`;
+        });
+      }
+      if (noteY2 !== null) {
+        const col2 = noteColor(note.a2);
+        svg += `<ellipse cx="${x}" cy="${noteY2}" rx="${NOTE_R}" ry="${NOTE_R * 0.72}" fill="${col2}" opacity="0.92"/>`;
+        if (note.a2) {
+          svg += `<text x="${x - NOTE_R - 2}" y="${noteY2 + 3.5}" text-anchor="end" font-size="10" fill="${col2}" font-family="serif" font-weight="bold">${note.a2}</text>`;
+        }
+      }
+    }
+
+    // ── Stem ─────────────────────────────────────────────────────────────
+    // Middle line of treble = B4 (step 4 from bottom) → y = TREBLE_BOTTOM_Y - 4*HALF
+    // Middle line of bass   = B3 (step 7 — wait: G2=0,A2=1,B2=2,C3=3,D3=4,E3=5,F3=6,G3=7 → B3=9, 
+    // actually bass middle line = B3 = step... bass lines are G2(0),B2(2),D3(4),F3(6),A3(8))
+    // Bass middle line = D3 (step 4 from G2 bottom) → y = BASS_BOTTOM_Y - 4*HALF
+    let stemUp;
+    if (clef === 'treble') {
+      const trebleMiddleY = TREBLE_BOTTOM_Y - 4 * HALF; // B4 middle line
+      stemUp = noteY > trebleMiddleY; // note below middle → stem up
+    } else {
+      const bassMiddleY = BASS_BOTTOM_Y - 4 * HALF; // D3 middle line
+      stemUp = noteY > bassMiddleY;
+    }
+    const stemLen = 25;
+    const stemX = stemUp ? x + NOTE_R - 1 : x - NOTE_R + 1;
+    const stemEndY = stemUp ? noteY - stemLen : noteY + stemLen;
+    svg += `<line x1="${stemX}" x2="${stemX}" y1="${noteY}" y2="${stemEndY}" stroke="${col}" stroke-width="1.3" opacity="0.75"/>`;
+
+    // ── Finger number ────────────────────────────────────────────────────
+    // For treble: above the note (or above stem if stem goes up)
+    // For bass: below the note
+    let fingerY;
+    if (clef === 'treble') {
+      fingerY = Math.min(noteY, stemEndY) - 6;
+    } else {
+      fingerY = Math.max(noteY, stemEndY) + 12;
+    }
+    svg += `<text x="${x}" y="${fingerY}" text-anchor="middle" font-size="8.5" fill="${fCol}" font-family="'DM Mono',monospace" font-weight="${isThumb ? '700' : '400'}">${fingerLabel}</text>`;
+
+    // ── Note name at bottom ──────────────────────────────────────────────
+    const bottomLabel = note.l2
+      ? `${note.l2}${note.a2 || ''}/${letter}${acc || ''}`
+      : `${letter}${acc || ''}`;
+    svg += `<text x="${x}" y="${SVG_H - 4}" text-anchor="middle" font-size="6.5" fill="var(--muted)" font-family="'DM Mono',monospace">${bottomLabel}</text>`;
+  });
+
+  svg += '</svg>';
+  return svg;
+}
+
+// ─── BUILD DOM ─────────────────────────────────────────────────────────────
+
+const nav = document.getElementById('gradeNav');
+const mainEl = document.getElementById('main');
+
+const CATEGORY_LABELS = {
+  'scale': 'Scale',
+  'broken-chord': 'Broken Chord',
+  'arpeggio': 'Arpeggio',
+  'dom7': 'Dominant 7th',
+  'dim7': 'Diminished 7th',
+  'thirds': 'Scale in 3rds',
+  'chromatic': 'Chromatic',
+  'contrary': 'Contrary Motion',
+};
+
+const HANDS_LABELS = {
+  'rh': 'RH only',
+  'lh': 'LH only',
+  'together': 'Hands together',
+  'contrary': 'Contrary motion',
+  'separate': 'Hands separately',
+};
+
+GRADES.forEach((g, gi) => {
+  const btn = document.createElement('button');
+  btn.textContent = g.grade;
+  if (gi === 0) btn.classList.add('active');
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.grade-section').forEach(s => s.classList.remove('active'));
+    document.getElementById('grade-' + gi).classList.add('active');
+  });
+  nav.appendChild(btn);
+
+  const sec = document.createElement('div');
+  sec.className = 'grade-section' + (gi === 0 ? ' active' : '');
+  sec.id = 'grade-' + gi;
+
+  const hdr = document.createElement('div');
+  hdr.className = 'grade-header';
+  hdr.innerHTML = `<div class="grade-title">${g.grade}</div><div class="grade-subtitle">${g.desc}</div>`;
+  sec.appendChild(hdr);
+
+  // Set A / Set B tabs
+  const tabsEl = document.createElement('div');
+  tabsEl.className = 'set-tabs';
+  const setKeys = Object.keys(g.sets);
+  setKeys.forEach((sk, si) => {
+    const tabBtn = document.createElement('button');
+    tabBtn.textContent = g.sets[sk].label;
+    if (si === 0) tabBtn.classList.add('active');
+    tabBtn.addEventListener('click', () => {
+      tabsEl.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      tabBtn.classList.add('active');
+      sec.querySelectorAll('.set-panel').forEach(p => p.classList.remove('active'));
+      sec.querySelector(`#grade-${gi}-set-${sk}`).classList.add('active');
+    });
+    tabsEl.appendChild(tabBtn);
+  });
+  sec.appendChild(tabsEl);
+
+  // One panel per set
+  setKeys.forEach((sk, si) => {
+    const set = g.sets[sk];
+    const panel = document.createElement('div');
+    panel.className = 'set-panel' + (si === 0 ? ' active' : '');
+    panel.id = `grade-${gi}-set-${sk}`;
+
+    if (set.summary) {
+      const summary = document.createElement('div');
+      summary.className = 'set-summary';
+      summary.innerHTML = set.summary;
+      panel.appendChild(summary);
+    }
+
+    const grid = document.createElement('div');
+    grid.className = 'scales-grid';
+
+    set.items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'scale-card';
+
+      const catLabel = CATEGORY_LABELS[item.category] || item.category;
+      const handLabel = HANDS_LABELS[item.hands] || item.hands;
+      // Hide the hands badge for single-hand items — the card body now carries
+      // a "<hand> only required" note instead.
+      const showHandsBadge = item.hands !== 'rh' && item.hands !== 'lh';
+
+      card.innerHTML = `
+        <div class="scale-card-header">
+          <div>
+            <div class="scale-name">${item.name}</div>
+            <div class="badges">
+              <span class="badge cat-${item.category}">${catLabel}</span>
+              ${showHandsBadge ? `<span class="badge hands-${item.hands}">${handLabel}</span>` : ''}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem">
+            <span class="octave-badge">${item.octaves} oct.</span>
+            <span class="toggle-icon">▾</span>
+          </div>
+        </div>
+        <div class="scale-body"></div>
+      `;
+
+      const body = card.querySelector('.scale-body');
+      card.querySelector('.scale-card-header').addEventListener('click', () => {
+        card.classList.toggle('open');
+        if (card.classList.contains('open') && !body.dataset.rendered) {
+          body.dataset.rendered = '1';
+          renderCardBody(body, item);
+        }
+      });
+
+      grid.appendChild(card);
+    });
+
+    panel.appendChild(grid);
+    sec.appendChild(panel);
+  });
+
+  mainEl.appendChild(sec);
+});
+
+function shiftOctave(notes, delta) {
+  if (!notes) return notes;
+  return notes.map(nt => ({
+    ...nt,
+    o: nt.o + delta,
+    o2: nt.o2 !== undefined ? nt.o2 + delta : undefined,
+  }));
+}
+
+// For single-hand items, auto-generate the other hand (one octave offset) so
+// both staves are always visible. The `hands` field still tells the user
+// which one the exam requires.
+function fillBothHands(rh, lh, required) {
+  const hasRh = rh && rh.length > 0;
+  const hasLh = lh && lh.length > 0;
+  if (required === 'rh' && hasRh && !hasLh) return { rh, lh: shiftOctave(rh, -1) };
+  if (required === 'lh' && hasLh && !hasRh) return { rh: shiftOctave(lh, 1), lh };
+  return { rh, lh };
+}
+
+function renderStaves(container, rh, lh) {
+  if (rh && rh.length > 0) {
+    const rhSec = document.createElement('div');
+    rhSec.className = 'staff-section';
+    rhSec.innerHTML = `<div class="hand-label rh">Right Hand — Treble Clef · Fingering above noteheads</div>`;
+    rhSec.innerHTML += buildStaffSVG(rh, 'treble', 'var(--rh-col)');
+    container.appendChild(rhSec);
+  }
+  if (lh && lh.length > 0) {
+    const lhSec = document.createElement('div');
+    lhSec.className = 'staff-section';
+    lhSec.innerHTML = `<div class="hand-label lh">Left Hand — Bass Clef · Fingering below noteheads</div>`;
+    lhSec.innerHTML += buildStaffSVG(lh, 'bass', 'var(--lh-col)');
+    container.appendChild(lhSec);
+  }
+}
+
+function renderCardBody(body, item) {
+  if (item.hands === 'rh' || item.hands === 'lh') {
+    const req = document.createElement('div');
+    req.className = 'required-hand-note';
+    const handName = item.hands === 'rh' ? 'Right Hand' : 'Left Hand';
+    req.innerHTML = `<b>${handName} only required</b> — the other hand is shown for reference at a suitable octave.`;
+    body.appendChild(req);
+  }
+
+  if (item.variants && item.variants.length > 0) {
+    item.variants.forEach(v => {
+      const sec = document.createElement('div');
+      sec.className = 'variant-section';
+      const label = document.createElement('div');
+      label.className = 'variant-label';
+      label.textContent = v.label;
+      sec.appendChild(label);
+      const filled = fillBothHands(v.rh, v.lh, item.hands);
+      renderStaves(sec, filled.rh, filled.lh);
+      body.appendChild(sec);
+    });
+    if (item.note) {
+      const info = document.createElement('div');
+      info.className = 'info-note';
+      info.textContent = 'ℹ ' + item.note;
+      body.appendChild(info);
+    }
+    return;
+  }
+
+  const filled = fillBothHands(item.rh, item.lh, item.hands);
+  renderStaves(body, filled.rh, filled.lh);
+
+  if (item.note) {
+    const info = document.createElement('div');
+    info.className = 'info-note';
+    info.textContent = 'ℹ ' + item.note;
+    body.appendChild(info);
+  }
+
+  if ((!filled.rh || filled.rh.length === 0) && (!filled.lh || filled.lh.length === 0)) {
+    body.innerHTML = `<div class="info-note" style="margin:0">ℹ ${item.note || 'See grade notes above.'}</div>`;
+  }
+}
+</script>
+
+</body>
+</html>
