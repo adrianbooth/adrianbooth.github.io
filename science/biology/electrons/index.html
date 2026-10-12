@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#17324d">
+<title>Electron Shell Study Helper</title>
+<style>
+:root{color-scheme:light;--ink:#172b3a;--muted:#5a6b78;--blue:#2463eb;--pale:#eef5ff;--line:#d8e1ea;--card:#fff;--bg:#f5f8fc}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:#17324d;color:white;padding:22px 16px 26px}header .wrap,main{max-width:960px;margin:auto}h1{font-size:clamp(1.55rem,5vw,2.25rem);line-height:1.15;margin:0 0 8px}header p{margin:0;color:#e1ebf5}
+main{padding:16px;display:grid;gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 4px 16px #17324d0b}
+h2{font-size:1.2rem;margin:0 0 12px}.muted,.small{color:var(--muted)}.small{font-size:.92rem}
+.slider-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px}input[type=range]{width:100%;accent-color:var(--blue);min-height:36px;cursor:pointer}.z-pill{background:var(--pale);border:1px solid #cbdcff;border-radius:12px;padding:8px 13px;min-width:88px;text-align:center}.z-pill strong{font-size:1.5rem;display:block;line-height:1.1}.z-pill span{font-size:.78rem;color:var(--muted)}.range-labels{display:flex;justify-content:space-between;color:var(--muted);font-size:.8rem}
+.element{display:flex;align-items:center;gap:14px}.number{width:78px;height:78px;border-radius:14px;background:var(--pale);display:grid;place-content:center;text-align:center;flex-shrink:0}.number strong{font-size:1.7rem;line-height:1}.number span{font-size:.78rem;color:var(--muted)}.element h3{font-size:1.45rem;margin:0}.muted{margin:3px 0}
+.result{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}.shells{display:flex;gap:8px;flex-wrap:wrap}.shell{border:1px solid #b7c9e0;background:#f4f8ff;border-radius:12px;padding:10px 13px;min-width:68px;text-align:center}.shell strong{display:block;font-size:1.3rem}.shell span{font-size:.83rem;color:var(--muted)}
+.diagram-wrap{display:flex;justify-content:center;align-items:center;min-height:280px;overflow:hidden}svg{width:min(100%,430px);height:auto;overflow:visible}.note{background:#fff8e8;border-left:4px solid #d49a27;padding:12px 14px;border-radius:8px;margin-top:12px}.rule-list{padding-left:1.25rem;margin:8px 0}.rule-list li{margin:7px 0}.rule-grid{display:grid;grid-template-columns:1fr;gap:10px}.rule{border:1px solid var(--line);border-radius:12px;padding:12px}.rule strong{display:block;margin-bottom:3px}
+@media(min-width:700px){.result{grid-template-columns:1fr 1fr}.diagram-card{grid-column:1/-1}.diagram-wrap{min-height:340px}.rule-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>Electron Shell Study Helper</h1><p>Slide to any atomic number and explore the electron arrangement.</p></div></header>
+<main>
+<section class="card">
+<h2>Choose an atomic number</h2>
+<div class="slider-row"><div><input id="atomicNumber" type="range" min="1" max="118" value="11" step="1" aria-label="Atomic number"><div class="range-labels"><span>1 · Hydrogen</span><span>118 · Oganesson</span></div></div><div class="z-pill"><strong id="zValue">11</strong><span>Atomic number</span></div></div>
+<p class="small">Move the slider. The element name, symbol and electron shells update automatically.</p>
+</section>
+<section class="card">
+<h2>Electron arrangement</h2>
+<div class="result">
+<div>
+<div class="element"><div class="number"><strong id="elementZ">11</strong><span>atomic no.</span></div><div><h3 id="elementName">Sodium (Na)</h3><p class="muted" id="electronCount">11 electrons in a neutral atom</p></div></div>
+<h3 style="font-size:1rem;margin:18px 0 8px">Electrons in each shell</h3>
+<div class="shells" id="shellList"></div>
+<p class="small" id="arrangementText"></p>
+<div class="note" id="specialNote" hidden></div>
+</div>
+<div class="diagram-card"><div class="diagram-wrap"><svg id="atomDiagram" viewBox="0 0 360 360" role="img" aria-label="Electron shell diagram"></svg></div><p class="small" style="text-align:center">Dots represent electrons; circles represent shells. For heavier elements this is a simplified shell diagram, not an orbital drawing.</p></div>
+</div>
+</section>
+<section class="card">
+<h2>How the shell rules work</h2>
+<div class="rule-grid">
+<div class="rule"><strong>1. Atomic number = electron count</strong>In a neutral atom, the atomic number gives the number of protons and also the number of electrons.</div>
+<div class="rule"><strong>2. Electrons fill lower-energy states first</strong>Electrons occupy available lower-energy orbitals before higher-energy ones. Shells are energy levels, each containing subshells.</div>
+<div class="rule"><strong>3. Shell capacity</strong>A shell with principal level <em>n</em> can hold up to <em>2n²</em> electrons in total. For example, shell 1 holds 2 and shell 2 holds 8. This is a maximum capacity, not always the order shells fill.</div>
+<div class="rule"><strong>4. Why simple rules have exceptions</strong>Subshells from different shells can be close in energy. Their order can shift, and half-filled or filled subshells can be especially stable. So transition metals and heavier elements do not follow a simple “fill each shell to capacity” pattern.</div>
+</div>
+<p class="small">The displayed arrangements use commonly taught ground-state electron configurations converted into shell totals. A few very heavy elements have uncertain or debated configurations, so their shell totals should be treated as approximate.</p>
+</section>
+
+<section class="card">
+<h2>Extra learning: why shells do not simply fill to 2n²</h2>
+<p><strong>The key idea:</strong> <em>2n² tells you the maximum capacity of a shell, not the order electrons fill in.</em> Electrons fill the available orbitals with the lowest energy first. Some orbitals in a higher shell can be lower in energy than orbitals in a lower shell, so the filling order crosses between shells.</p>
+
+<div class="rule-grid">
+  <div class="rule">
+    <strong>1. Calculate a shell's maximum capacity</strong>
+    Use <em>2n²</em>, where <em>n</em> is the shell number.
+    <ul class="rule-list">
+      <li>Shell 1: 2 × 1² = <strong>2</strong></li>
+      <li>Shell 2: 2 × 2² = <strong>8</strong></li>
+      <li>Shell 3: 2 × 3² = <strong>18</strong></li>
+      <li>Shell 4: 2 × 4² = <strong>32</strong></li>
+      <li>Shell 5: 2 × 5² = <strong>50</strong></li>
+      <li>Shell 6: 2 × 6² = <strong>72</strong></li>
+    </ul>
+    <p class="small">So shells can have a capacity greater than 32. The number 32 is the maximum for shell 4 only.</p>
+  </div>
+  <div class="rule">
+    <strong>2. What is a subshell?</strong>
+    Each shell is split into subshells called <em>s, p, d</em> and <em>f</em>. They have different capacities:
+    <ul class="rule-list">
+      <li><em>s</em>: 2 electrons</li>
+      <li><em>p</em>: 6 electrons</li>
+      <li><em>d</em>: 10 electrons</li>
+      <li><em>f</em>: 14 electrons</li>
+    </ul>
+    <p class="small">For example, shell 3 contains 3s, 3p and 3d, so its total capacity is 2 + 6 + 10 = 18.</p>
+  </div>
+  <div class="rule">
+    <strong>3. Why does shell 4 start before shell 3 is full?</strong>
+    The 4s subshell is usually lower in energy than 3d when these begin filling, so potassium and calcium place electrons in 4s first. After that, electrons begin filling 3d.
+    <p class="small">That is why potassium is 2, 8, 8, 1 rather than 2, 8, 9. Shell 3 has room for 18 in total, but it does not have to fill to 18 before shell 4 starts.</p>
+  </div>
+  <div class="rule">
+    <strong>4. Why are there exceptions?</strong>
+    Subshell energy levels can be very close. Sometimes moving one electron gives a more stable arrangement, especially when a d or f subshell is half-full or full.
+    <p class="small">Example: chromium is commonly written as [Ar] 3d⁵ 4s¹ rather than [Ar] 3d⁴ 4s². This gives the 3d subshell a half-full arrangement. Copper similarly has a full 3d subshell.</p>
+  </div>
+  <div class="rule">
+    <strong>5. Three useful rules for orbitals</strong>
+    <ul class="rule-list">
+      <li><strong>Aufbau principle:</strong> fill lower-energy orbitals first.</li>
+      <li><strong>Pauli exclusion principle:</strong> each orbital holds at most 2 electrons, with opposite spins.</li>
+      <li><strong>Hund's rule:</strong> orbitals of equal energy get one electron each before electrons pair up.</li>
+    </ul>
+    <p class="small">Think of seats: use the lowest-energy seats first, two people maximum per orbital, and spread out across equal-energy seats before sharing.</p>
+  </div>
+  <div class="rule">
+    <strong>6. Why do shell diagrams simplify things?</strong>
+    A shell diagram groups electrons by shell, which is useful for seeing patterns. It does not show the individual s, p, d and f orbitals or all the details of their energies.
+    <p class="small">For introductory chemistry, shell totals are a handy map. For transition metals and heavier elements, orbital configurations explain the details more accurately.</p>
+  </div>
+</div>
+</section>
+</main>
+<script>
+const data = [
+["Hydrogen","H",[1]],["Helium","He",[2]],["Lithium","Li",[2,1]],["Beryllium","Be",[2,2]],["Boron","B",[2,3]],["Carbon","C",[2,4]],["Nitrogen","N",[2,5]],["Oxygen","O",[2,6]],["Fluorine","F",[2,7]],["Neon","Ne",[2,8]],
+["Sodium","Na",[2,8,1]],["Magnesium","Mg",[2,8,2]],["Aluminium","Al",[2,8,3]],["Silicon","Si",[2,8,4]],["Phosphorus","P",[2,8,5]],["Sulfur","S",[2,8,6]],["Chlorine","Cl",[2,8,7]],["Argon","Ar",[2,8,8]],["Potassium","K",[2,8,8,1]],["Calcium","Ca",[2,8,8,2]],
+["Scandium","Sc",[2,8,9,2]],["Titanium","Ti",[2,8,10,2]],["Vanadium","V",[2,8,11,2]],["Chromium","Cr",[2,8,13,1]],["Manganese","Mn",[2,8,13,2]],["Iron","Fe",[2,8,14,2]],["Cobalt","Co",[2,8,15,2]],["Nickel","Ni",[2,8,16,2]],["Copper","Cu",[2,8,18,1]],["Zinc","Zn",[2,8,18,2]],
+["Gallium","Ga",[2,8,18,3]],["Germanium","Ge",[2,8,18,4]],["Arsenic","As",[2,8,18,5]],["Selenium","Se",[2,8,18,6]],["Bromine","Br",[2,8,18,7]],["Krypton","Kr",[2,8,18,8]],
+["Rubidium","Rb",[2,8,18,8,1]],["Strontium","Sr",[2,8,18,8,2]],["Yttrium","Y",[2,8,18,9,2]],["Zirconium","Zr",[2,8,18,10,2]],["Niobium","Nb",[2,8,18,12,1]],["Molybdenum","Mo",[2,8,18,13,1]],["Technetium","Tc",[2,8,18,13,2]],["Ruthenium","Ru",[2,8,18,15,1]],["Rhodium","Rh",[2,8,18,16,1]],["Palladium","Pd",[2,8,18,18]],["Silver","Ag",[2,8,18,18,1]],["Cadmium","Cd",[2,8,18,18,2]],
+["Indium","In",[2,8,18,18,3]],["Tin","Sn",[2,8,18,18,4]],["Antimony","Sb",[2,8,18,18,5]],["Tellurium","Te",[2,8,18,18,6]],["Iodine","I",[2,8,18,18,7]],["Xenon","Xe",[2,8,18,18,8]],
+["Caesium","Cs",[2,8,18,18,8,1]],["Barium","Ba",[2,8,18,18,8,2]],["Lanthanum","La",[2,8,18,18,9,2]],["Cerium","Ce",[2,8,18,19,9,2]],["Praseodymium","Pr",[2,8,18,21,8,2]],["Neodymium","Nd",[2,8,18,22,8,2]],["Promethium","Pm",[2,8,18,23,8,2]],["Samarium","Sm",[2,8,18,24,8,2]],["Europium","Eu",[2,8,18,25,8,2]],["Gadolinium","Gd",[2,8,18,25,9,2]],["Terbium","Tb",[2,8,18,27,8,2]],["Dysprosium","Dy",[2,8,18,28,8,2]],["Holmium","Ho",[2,8,18,29,8,2]],["Erbium","Er",[2,8,18,30,8,2]],["Thulium","Tm",[2,8,18,31,8,2]],["Ytterbium","Yb",[2,8,18,32,8,2]],["Lutetium","Lu",[2,8,18,32,9,2]],
+["Hafnium","Hf",[2,8,18,32,10,2]],["Tantalum","Ta",[2,8,18,32,11,2]],["Tungsten","W",[2,8,18,32,12,2]],["Rhenium","Re",[2,8,18,32,13,2]],["Osmium","Os",[2,8,18,32,14,2]],["Iridium","Ir",[2,8,18,32,15,2]],["Platinum","Pt",[2,8,18,32,17,1]],["Gold","Au",[2,8,18,32,18,1]],["Mercury","Hg",[2,8,18,32,18,2]],["Thallium","Tl",[2,8,18,32,18,3]],["Lead","Pb",[2,8,18,32,18,4]],["Bismuth","Bi",[2,8,18,32,18,5]],["Polonium","Po",[2,8,18,32,18,6]],["Astatine","At",[2,8,18,32,18,7]],["Radon","Rn",[2,8,18,32,18,8]],
+["Francium","Fr",[2,8,18,32,18,8,1]],["Radium","Ra",[2,8,18,32,18,8,2]],["Actinium","Ac",[2,8,18,32,18,9,2]],["Thorium","Th",[2,8,18,32,18,10,2]],["Protactinium","Pa",[2,8,18,32,20,9,2]],["Uranium","U",[2,8,18,32,21,9,2]],["Neptunium","Np",[2,8,18,32,22,9,2]],["Plutonium","Pu",[2,8,18,32,24,8,2]],["Americium","Am",[2,8,18,32,25,8,2]],["Curium","Cm",[2,8,18,32,25,9,2]],["Berkelium","Bk",[2,8,18,32,27,8,2]],["Californium","Cf",[2,8,18,32,28,8,2]],["Einsteinium","Es",[2,8,18,32,29,8,2]],["Fermium","Fm",[2,8,18,32,30,8,2]],["Mendelevium","Md",[2,8,18,32,31,8,2]],["Nobelium","No",[2,8,18,32,32,8,2]],["Lawrencium","Lr",[2,8,18,32,32,8,3]],
+["Rutherfordium","Rf",[2,8,18,32,32,10,2]],["Dubnium","Db",[2,8,18,32,32,11,2]],["Seaborgium","Sg",[2,8,18,32,32,12,2]],["Bohrium","Bh",[2,8,18,32,32,13,2]],["Hassium","Hs",[2,8,18,32,32,14,2]],["Meitnerium","Mt",[2,8,18,32,32,15,2]],["Darmstadtium","Ds",[2,8,18,32,32,16,2]],["Roentgenium","Rg",[2,8,18,32,32,17,2]],["Copernicium","Cn",[2,8,18,32,32,18,2]],["Nihonium","Nh",[2,8,18,32,32,18,3]],["Flerovium","Fl",[2,8,18,32,32,18,4]],["Moscovium","Mc",[2,8,18,32,32,18,5]],["Livermorium","Lv",[2,8,18,32,32,18,6]],["Tennessine","Ts",[2,8,18,32,32,18,7]],["Oganesson","Og",[2,8,18,32,32,18,8]]
+];
+const exceptions = {
+24:"Chromium is [Ar] 3d⁵ 4s¹ rather than 3d⁴ 4s²; a half-filled d subshell is relatively stable.",
+29:"Copper is [Ar] 3d¹⁰ 4s¹ rather than 3d⁹ 4s²; a filled d subshell is relatively stable.",
+41:"Niobium has an unusual 4d/5s balance because these subshells are close in energy.",
+42:"Molybdenum has a half-filled 4d subshell (4d⁵ 5s¹), which is relatively stable.",
+44:"Ruthenium has an unusual 4d/5s arrangement because these subshells are close in energy.",
+45:"Rhodium has an unusual 4d/5s arrangement because these subshells are close in energy.",
+46:"Palladium is [Kr] 4d¹⁰ 5s⁰; its filled 4d subshell is especially stable.",
+47:"Silver is [Kr] 4d¹⁰ 5s¹; a filled 4d subshell is relatively stable.",
+57:"Lanthanum begins the lanthanide region; 4f and 5d subshell energies are close.",
+58:"Cerium's 4f and 5d subshells are close in energy, so the ground-state arrangement differs from a simple filling prediction.",
+64:"Gadolinium has a half-filled 4f subshell, which is relatively stable.",
+78:"Platinum has an unusual 5d/6s arrangement because these subshells are close in energy.",
+79:"Gold has a filled 5d subshell and one 6s electron; the subshell energies are close.",
+89:"Actinium begins the actinide region; 5f, 6d and 7s energies are close.",
+103:"Lawrencium's ground-state configuration is more complex than a simple shell-filling rule; heavy-element configurations can be affected by relativistic effects."
+};
+const range=document.getElementById('atomicNumber');
+function render(){
+ const z=Number(range.value),e=data[z-1],arr=e[2];
+ document.getElementById('zValue').textContent=z;document.getElementById('elementZ').textContent=z;
+ document.getElementById('elementName').textContent=`${e[0]} (${e[1]})`;
+ document.getElementById('electronCount').textContent=`${z} electrons in a neutral atom`;
+ document.getElementById('shellList').innerHTML=arr.map((n,i)=>`<div class="shell"><span>Shell ${i+1}</span><strong>${n}</strong></div>`).join('');
+ document.getElementById('arrangementText').textContent=`Shell arrangement: ${arr.join(', ')}. The numbers add up to ${arr.reduce((a,b)=>a+b,0)} electrons.`;
+ const note=document.getElementById('specialNote');
+ if(exceptions[z]){note.hidden=false;note.innerHTML=`<strong>Exception to a simple filling prediction:</strong> ${exceptions[z]}`}else{note.hidden=true;note.textContent=''}
+ const svg=document.getElementById('atomDiagram'),cx=180,cy=180;
+ // Scale radii so many-shell atoms fit while keeping shells distinguishable.
+ const maxR=154,step=maxR/(arr.length+0.45),radii=arr.map((_,i)=>step*(i+1));
+ const colors=['#2463eb','#16856b','#c06b19','#8654c7','#c24674','#278caa','#65758b'];
+ let s=`<circle cx="${cx}" cy="${cy}" r="19" fill="#17324d"/><text x="${cx}" y="${cy+5}" fill="white" text-anchor="middle" font-size="${e[1].length>2?9:12}" font-weight="700">${e[1]}</text>`;
+ arr.forEach((count,i)=>{const r=radii[i];s+=`<circle cx="${cx}" cy="${cy}" r="${r.toFixed(2)}" fill="none" stroke="#9eb0c2" stroke-width="${arr.length>6?1:1.4}"/>`;for(let j=0;j<count;j++){const angle=(-90+j*360/count+(i%2)*8)*Math.PI/180,x=cx+r*Math.cos(angle),y=cy+r*Math.sin(angle),dot=arr.length>6?Math.max(2,Math.min(4,18/Math.sqrt(count))):Math.max(2.7,Math.min(5.2,22/Math.sqrt(count)));s+=`<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${dot.toFixed(1)}" fill="${colors[i%colors.length]}" stroke="white" stroke-width=".7"/>`}});
+ svg.innerHTML=s;svg.setAttribute('aria-label',`${e[0]}, atomic number ${z}, shell arrangement ${arr.join(', ')}`);
+}
+range.addEventListener('input',render);render();
+</script>
+</body>
+</html>

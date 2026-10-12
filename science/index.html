@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Science · Adrian Booth</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0e0e12;
+        --surface: #16161e;
+        --card: #1c1c26;
+        --border: #2a2a3a;
+        --accent: #c8a97e;
+        --accent2: #7e9fc8;
+        --text: #e8e6e0;
+        --muted: #6e6e82;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'DM Mono', monospace;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        text-align: center;
+        padding: 3rem 1rem 2rem;
+        border-bottom: 1px solid var(--border);
+        background: radial-gradient(
+          ellipse at 50% 0%,
+          rgba(200, 169, 126, 0.1) 0%,
+          transparent 70%
+        );
+      }
+      h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        font-weight: 900;
+        color: var(--accent);
+      }
+      header p {
+        margin-top: 0.75rem;
+        color: var(--muted);
+        font-size: 0.75rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+      main {
+        flex: 1;
+        max-width: 880px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 2.5rem 1.25rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.25rem;
+        align-content: start;
+      }
+      a.card {
+        display: block;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1.5rem 1.25rem;
+        color: var(--text);
+        text-decoration: none;
+        transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      }
+      a.card:hover,
+      a.card:focus-visible {
+        transform: translateY(-2px);
+        border-color: var(--accent);
+        background: var(--surface);
+        outline: none;
+      }
+      a.card h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--accent);
+      }
+      a.card .tag {
+        display: inline-block;
+        margin-bottom: 0.75rem;
+        font-size: 0.65rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent2);
+      }
+      a.card p {
+        color: var(--muted);
+        font-size: 0.85rem;
+        line-height: 1.55;
+      }
+      .back {
+        display: block;
+        margin-top: 1rem;
+        color: var(--accent2);
+        font-size: 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        text-decoration: none;
+      }
+      footer {
+        text-align: center;
+        padding: 1.5rem 1rem 2rem;
+        color: var(--muted);
+        font-size: 0.7rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Science</h1>
+      <p>Study helpers</p>
+      <a class="back" href="../">&larr; Back</a>
+    </header>
+    <main>
+      <a class="card" href="./biology/">
+        <span class="tag">Area</span>
+        <h2>Biology</h2>
+        <p>Biology study helpers.</p>
+      </a>
+    </main>
+    <footer>github.com/adrianbooth</footer>
+  </body>
+</html>
